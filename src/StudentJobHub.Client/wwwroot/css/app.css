@@ -1359,3 +1359,176 @@ body.dark-mode .error-message button {
     background-color: #ef4444 !important;
     color: #ffffff !important;
 }
+
+/* Job listing and detail content must keep their contrast inside dark cards. */
+body.dark-mode .job-summary {
+    background-color: #172235 !important;
+    border: 1px solid #334155;
+}
+
+body.dark-mode .job-summary .summary-label,
+body.dark-mode .job-summary strong,
+body.dark-mode .job-details-header .posted-info,
+body.dark-mode .job-details-header .posted-info strong,
+body.dark-mode .job-section p,
+body.dark-mode .job-card .job-description,
+body.dark-mode .job-card .requirements p,
+body.dark-mode .job-card .posted-by small {
+    color: var(--app-text-secondary) !important;
+}
+
+body.dark-mode .job-summary strong,
+body.dark-mode .job-details-header .posted-info strong,
+body.dark-mode .job-card .posted-by strong {
+    color: var(--app-text-primary) !important;
+}
+
+body.dark-mode .job-section h2,
+body.dark-mode .job-details-card h1,
+body.dark-mode .job-card .job-content h2 {
+    color: var(--app-text-primary) !important;
+}
+
+body.dark-mode .job-details-header,
+body.dark-mode .job-actions {
+    border-color: #334155 !important;
+}
+
+body.dark-mode .job-card .job-info {
+    border-color: #334155 !important;
+}
+
+body.dark-mode .job-card .status[style*="color: black"],
+body.dark-mode .job-card .status[style*="color:black"] {
+    color: #082f49 !important;
+}
+
+/* Page-local styles and inline declarations are loaded after the shared
+   component styles in several Razor pages. Keep their surfaces readable
+   without changing the meaning of status and alert colors. */
+body.dark-mode .job-details-card,
+body.dark-mode .application-card,
+body.dark-mode .profile-card,
+body.dark-mode .notification-card,
+body.dark-mode .review-card,
+body.dark-mode .post-job-form,
+body.dark-mode .loading-card,
+body.dark-mode .empty-card,
+body.dark-mode .error-card,
+body.dark-mode .loading-state,
+body.dark-mode .empty-state,
+body.dark-mode .error-state {
+    background-color: #1e293b !important;
+    color: var(--app-text-primary) !important;
+    border-color: #475569 !important;
+}
+
+body.dark-mode .job-details-card .job-details-header,
+body.dark-mode .job-details-card .job-actions,
+body.dark-mode .application-card .application-header,
+body.dark-mode .job-info,
+body.dark-mode .form-actions {
+    border-color: #475569 !important;
+}
+
+body.dark-mode .job-details-card .job-section p,
+body.dark-mode .application-message p,
+body.dark-mode .application-date,
+body.dark-mode .applications-summary,
+body.dark-mode .page-header p,
+body.dark-mode .posted-info,
+body.dark-mode .post-job-header p,
+body.dark-mode .dashboard-header p,
+body.dark-mode .job-description,
+body.dark-mode .requirements p,
+body.dark-mode .job-details,
+body.dark-mode .job-details span,
+body.dark-mode .user-roles,
+body.dark-mode .notification-card small {
+    color: var(--app-text-secondary) !important;
+}
+
+body.dark-mode .job-details-card .posted-info strong,
+body.dark-mode .application-card .applications-summary strong,
+body.dark-mode .application-card h2,
+body.dark-mode .application-card h3,
+body.dark-mode .page-header h1,
+body.dark-mode .job-details-card h1,
+body.dark-mode .job-details-card h2,
+body.dark-mode .profile-card h1,
+body.dark-mode .profile-card h2,
+body.dark-mode .profile-card h3 {
+    color: var(--app-text-primary) !important;
+}
+
+/* Known light page-local surfaces. Status/alert elements are deliberately
+   omitted so their semantic success, warning, and error colors remain. */
+body.dark-mode .stat-card,
+body.dark-mode .action-card,
+body.dark-mode .home-hero,
+body.dark-mode .home-link,
+body.dark-mode .jobs-toolbar select,
+body.dark-mode .services-toolbar select,
+body.dark-mode .job-card,
+body.dark-mode .service-card {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-mode .action-card p,
+body.dark-mode .stat-card p,
+body.dark-mode .home-hero p,
+body.dark-mode .home-link p,
+body.dark-mode .job-card .job-description,
+body.dark-mode .service-card .service-description,
+body.dark-mode .service-card .service-meta {
+    color: var(--app-text-secondary) !important;
+}
+
+/* Inline colors used by filters, timestamps, links, and dashboard copy. */
+body.dark-mode [style*="color: #2563eb"],
+body.dark-mode [style*="color:#2563eb"],
+body.dark-mode [style*="color: #0953c9"],
+body.dark-mode [style*="color:#0953c9"] {
+    color: #7dd3fc !important;
+}
+
+body.dark-mode [style*="color: #666"],
+body.dark-mode [style*="color:#666"],
+body.dark-mode [style*="color: black"]:not(.status):not(.job-status),
+body.dark-mode [style*="color:black"]:not(.status):not(.job-status) {
+    color: var(--app-text-secondary) !important;
+}
+
+body.dark-mode [style*="border: 1px solid #d1d5db"],
+body.dark-mode [style*="border:1px solid #d1d5db"],
+body.dark-mode [style*="border: 1px solid #576a91"],
+body.dark-mode [style*="border:1px solid #576a91"],
+body.dark-mode [style*="border: 1px solid #1c4293"],
+body.dark-mode [style*="border:1px solid #1c4293"] {
+    border-color: #64748b !important;
+}
+
+body.dark-mode [style*="background: #ecf7fb"],
+body.dark-mode [style*="background:#ecf7fb"],
+body.dark-mode [style*="background: #fcfcc1"],
+body.dark-mode [style*="background:#fcfcc1"],
+body.dark-mode [style*="background: #e8e4e4"],
+body.dark-mode [style*="background:#e8e4e4"],
+body.dark-mode [style*="background-color: #e8e4e4"],
+body.dark-mode [style*="background-color:#e8e4e4"] {
+    background-color: #1e293b !important;
+}
+
+/* Page-local light backgrounds (including CSS declarations in Razor
+   <style> blocks) need a dark surface when their component is rendered. */
+body.dark-mode .job-summary,
+body.dark-mode .job-details-card .job-summary,
+body.dark-mode .applications-page .loading-state,
+body.dark-mode .applications-page .empty-state,
+body.dark-mode .applications-page .error-state,
+body.dark-mode .jobs-page .error-message,
+body.dark-mode .job-details-page .error-message {
+    background-color: #172235 !important;
+    border-color: #475569 !important;
+}
