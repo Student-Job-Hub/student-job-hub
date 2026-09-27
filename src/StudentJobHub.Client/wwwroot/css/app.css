@@ -79,12 +79,91 @@ button {
 }
 
 /* ==========================================
-   HIGH CONTRAST DARK MODE OVERRIDES
+   DARK MODE
    ========================================== */
-/* body.dark-mode {
-    background-color: #0b0f19 !important;
-    color: #ffffff !important;
-} */
+body.dark-mode {
+    background-color: #0f172a;
+    color: #e2e8f0;
+}
+
+body.dark-mode main,
+body.dark-mode .content,
+body.dark-mode .page,
+body.dark-mode .jobs-page,
+body.dark-mode .services-page {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .top-row {
+    background-color: #111827 !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .theme-toggle-btn {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border-color: #475569;
+}
+
+body.dark-mode .theme-toggle-btn:hover,
+body.dark-mode .icon-btn:hover {
+    background-color: #334155;
+    color: #7dd3fc;
+}
+
+body.dark-mode .job-card,
+body.dark-mode .service-card {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode .job-content h2,
+body.dark-mode .service-header h2,
+body.dark-mode .service-price,
+body.dark-mode .job-info strong,
+body.dark-mode .posted-by strong {
+    color: #f8fafc;
+}
+
+body.dark-mode .job-description,
+body.dark-mode .requirements p,
+body.dark-mode .service-description,
+body.dark-mode .service-meta,
+body.dark-mode .label,
+body.dark-mode .jobs-header p {
+    color: #cbd5e1;
+}
+
+body.dark-mode .job-info {
+    border-color: #334155;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+
+body.dark-mode input::placeholder {
+    color: #94a3b8;
+}
+
+body.dark-mode .service-category {
+    color: #7dd3fc;
+}
+
+body.dark-mode .view-button {
+    background-color: #38bdf8;
+    color: #0f172a;
+}
+
+body.dark-mode .view-button:hover {
+    background-color: #7dd3fc;
+}
 
 /* body.dark-mode .content,
 body.dark-mode main,
