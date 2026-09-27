@@ -140,6 +140,27 @@ public class ApiBehaviorTests
     }
 
     [Fact]
+    public async Task RefreshAsync_RotatesTokenAndRejectsPreviousToken()
+    {
+        var (_, _, authService, _, _, _, _, _) = await CreateServicesAsync();
+        var registration = await authService.RegisterAsync(new RegisterDto
+        {
+            FullName = "Student User",
+            Email = "refresh@test.com",
+            Password = "Password123!",
+            Role = "Student"
+        });
+
+        var refreshed = await authService.RefreshAsync(registration.RefreshToken!);
+        var replayed = await authService.RefreshAsync(registration.RefreshToken!);
+
+        Assert.True(refreshed.Success);
+        Assert.False(string.IsNullOrWhiteSpace(refreshed.Token));
+        Assert.NotEqual(registration.RefreshToken, refreshed.RefreshToken);
+        Assert.False(replayed.Success);
+    }
+
+    [Fact]
     public async Task JobService_CreateAndGetById_Succeeds()
     {
         var (context, _, _, jobService, _, _, _, _) = await CreateServicesAsync();

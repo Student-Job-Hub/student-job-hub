@@ -21,137 +21,137 @@ build_property.EntryPointFilePath =
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = StudentJobHub.Client
 build_property.RootNamespace = StudentJobHub.Client
-build_property.ProjectDir = C:\Users\USER\Downloads\StudentJobHub\src\StudentJobHub.Client\
+build_property.ProjectDir = C:\Users\Local Disk\OneDrive\Desktop\GITHUB\student-jub-hub\src\StudentJobHub.Client\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\USER\Downloads\StudentJobHub\src\StudentJobHub.Client
+build_property.MSBuildProjectDirectory = C:\Users\Local Disk\OneDrive\Desktop\GITHUB\student-jub-hub\src\StudentJobHub.Client
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/App.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Components/ConfirmModal.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Components/ConfirmModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xDb25maXJtTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Components/FooterLayout.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Components/FooterLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xGb290ZXJMYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Components/ProfileCard.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Components/ProfileCard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQcm9maWxlQ2FyZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Components/SkeletonCard.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Components/SkeletonCard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTa2VsZXRvbkNhcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Components/ToastContainer.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Components/ToastContainer.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xUb2FzdENvbnRhaW5lci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/CreateService.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/CreateService.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3JlYXRlU2VydmljZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Dashboard.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGFzaGJvYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/EditJob.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/EditJob.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdEpvYi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/EditService.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/EditService.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRWRpdFNlcnZpY2UucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Home.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/JobApplications.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/JobApplications.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSm9iQXBwbGljYXRpb25zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/JobDetails.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/JobDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSm9iRGV0YWlscy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Jobs.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Jobs.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSm9icy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Login.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/MyApplications.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/MyApplications.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTXlBcHBsaWNhdGlvbnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/MyJobs.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/MyJobs.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTXlKb2JzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/MyServices.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/MyServices.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTXlTZXJ2aWNlcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/NotFound.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90Rm91bmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Notifications.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Notifications.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTm90aWZpY2F0aW9ucy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/PostJob.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/PostJob.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUG9zdEpvYi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Privacy-Policy.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Privacy-Policy.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS1Qb2xpY3kucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Profile.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Profile.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJvZmlsZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Register.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Register.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0ZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Reviews.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Reviews.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmV2aWV3cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/ServiceDetails.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/ServiceDetails.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZURldGFpbHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Services.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Services.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VydmljZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Pages/Terms of Services.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Pages/Terms of Services.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGVybXMgb2YgU2VydmljZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/_Imports.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Layout/MainLayout.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-0lpm75meiv
 
-[C:/Users/USER/Downloads/StudentJobHub/src/StudentJobHub.Client/Layout/NavMenu.razor]
+[C:/Users/Local Disk/OneDrive/Desktop/GITHUB/student-jub-hub/src/StudentJobHub.Client/Layout/NavMenu.razor]
 build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = b-3o27kfx1uv

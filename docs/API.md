@@ -1,13 +1,14 @@
 # REST API Specification — Student Job Hub
 
 **Base URL:** `http://localhost:5205/`  
-**Authentication Header:** `Authorization: Bearer <jwt_token>`  
+**Authentication Header:** `Authorization: Bearer <jwt_token>`
 
 ---
 
 ## 🔐 1. Authentication Endpoints (`/api/auth`)
 
 ### `POST /api/auth/register`
+
 - **Auth:** Public
 - **Request Body:**
   ```json
@@ -20,10 +21,11 @@
   }
   ```
 - **Responses:**
-  - `200 OK`: `{ "message": "Registration successful.", "token": "eyJhbG..." }`
+  - `200 OK`: `{ "message": "Registration successful.", "token": "eyJhbG...", "refreshToken": "..." }`
   - `400 Bad Request`: `{ "message": "Invalid role selected." }`
 
 ### `POST /api/auth/login`
+
 - **Auth:** Public
 - **Request Body:**
   ```json
@@ -33,26 +35,39 @@
   }
   ```
 - **Responses:**
-  - `200 OK`: `{ "message": "Login successful.", "token": "eyJhbG..." }`
+  - `200 OK`: `{ "message": "Login successful.", "token": "eyJhbG...", "refreshToken": "..." }`
   - `401 Unauthorized`: `{ "message": "Invalid email or password." }`
+
+### `POST /api/auth/refresh`
+
+- **Auth:** Public
+- **Request Body:** `{ "refreshToken": "..." }`
+- **Responses:**
+  - `200 OK`: Returns a new access token and rotated refresh token.
+  - `401 Unauthorized`: Refresh token is invalid, expired, or already used.
+- Refresh tokens expire after 30 days and can only be used once.
 
 ---
 
 ## 💼 2. Job Endpoints (`/api/jobs`)
 
 ### `GET /api/jobs`
+
 - **Auth:** Public
 - **Response:** `200 OK` Array of `JobResponseDto`
 
 ### `GET /api/jobs/my`
+
 - **Auth:** Bearer Token Required
 - **Response:** `200 OK` Array of jobs posted by authenticated user
 
 ### `GET /api/jobs/{id}`
+
 - **Auth:** Public
 - **Response:** `200 OK` `JobResponseDto` or `404 Not Found`
 
 ### `POST /api/jobs`
+
 - **Auth:** Bearer Token Required
 - **Request Body:**
   ```json
@@ -60,7 +75,7 @@
     "title": "Lab Research Assistant",
     "description": "Assist with data collection in CS lab.",
     "requirements": "Basic C# and SQL",
-    "budget": 250.00,
+    "budget": 250.0,
     "deadline": "2026-10-15T00:00:00Z"
   }
   ```
@@ -69,14 +84,17 @@
   - `401 Unauthorized`
 
 ### `PUT /api/jobs/{id}`
+
 - **Auth:** Bearer Token (Owner Only)
 - **Response:** `200 OK` or `404 Not Found` (if not owner)
 
 ### `PATCH /api/jobs/{id}/close`
+
 - **Auth:** Bearer Token (Owner Only)
 - **Response:** `200 OK` `{ "message": "Job closed successfully." }`
 
 ### `DELETE /api/jobs/{id}`
+
 - **Auth:** Bearer Token (Owner Only)
 - **Response:** `200 OK` or `404 Not Found`
 
@@ -85,6 +103,7 @@
 ## 📄 3. Application Endpoints (`/api/applications`)
 
 ### `POST /api/applications/{jobId}`
+
 - **Auth:** Bearer Token Required
 - **Request Body:** `{ "message": "I am interested in this role." }`
 - **Responses:**
@@ -92,19 +111,23 @@
   - `400 Bad Request`: Cannot apply to own job / Already applied / Job closed
 
 ### `GET /api/applications/my`
+
 - **Auth:** Bearer Token Required
 - **Response:** `200 OK` Array of current student's submitted applications
 
 ### `GET /api/applications/job/{jobId}`
+
 - **Auth:** Bearer Token (Job Owner Only)
 - **Response:** `200 OK` Array of candidate applications for specified job
 
 ### `PATCH /api/applications/{id}/status`
+
 - **Auth:** Bearer Token (Job Owner Only)
-- **Request Body:** `{ "status": "Accepted" }` *(or "Rejected")*
+- **Request Body:** `{ "status": "Accepted" }` _(or "Rejected")_
 - **Response:** `200 OK`
 
 ### `DELETE /api/applications/{id}`
+
 - **Auth:** Bearer Token (Applicant Only)
 - **Response:** `200 OK` (Only pending applications allowed to be withdrawn)
 
