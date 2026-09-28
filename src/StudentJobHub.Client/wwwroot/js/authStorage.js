@@ -1,6 +1,17 @@
 
 window.authStorage = {
-    setToken: (token) => localStorage.setItem("authToken", token),
+    setTokens: (token, refreshToken) => {
+        localStorage.setItem("authToken", token);
+        if (refreshToken) {
+            localStorage.setItem("refreshToken", refreshToken);
+        } else {
+            localStorage.removeItem("refreshToken");
+        }
+    },
     getToken: () => localStorage.getItem("authToken"),
-    removeToken: () => localStorage.removeItem("authToken")
+    getRefreshToken: () => localStorage.getItem("refreshToken"),
+    removeToken: () => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("refreshToken");
+    }
 };
