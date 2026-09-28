@@ -226,7 +226,6 @@ body.dark-mode h3,
 body.dark-mode h4,
 body.dark-mode h5,
 body.dark-mode h6,
-/* body.dark-mode strong, */
 body.dark-mode b,
 body.dark-mode th,
 body.dark-mode label,
@@ -265,7 +264,7 @@ body.dark-mode .dashboard-header p {
     color: #cbd5e1 !important;
 }
 
-body.dark-mode a:not(.btn):not(.post-job-button):not(.create-job-button):not(.nav-link):not(.primary-button) {
+body.dark-mode a:not(.btn):not(.post-job-button):not(.create-job-button):not(.nav-link):not(.primary-button):not(.secondary-button):not(.services-button) {
     color: #38bdf8 !important;
 }
 
