@@ -16,11 +16,15 @@
     }
     else if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="error-state"><p>@errorMessage</p></div>
+        <div class="error-state">
+            <p>@errorMessage</p>
+        </div>
     }
     else if (applications.Count == 0)
     {
-        <div class="empty-state"><p>No applications have been submitted for this job.</p></div>
+        <div class="empty-state">
+            <p>No applications have been submitted for this job.</p>
+        </div>
     }
     else
     {
@@ -37,6 +41,7 @@
                     </div>
                     <p>@application.Message</p>
                     <div class="application-actions">
+                        <a class="message-link" href="/messages/@application.Id">Message applicant</a>
                         <button @onclick="() => AcceptAsync(application)" class="accept-button"
                                 disabled="@IsUpdating(application.Id)">Accept</button>
                         <button @onclick="() => RejectAsync(application)" class="reject-button"
@@ -49,62 +54,70 @@
 </div>
 
 <style>
-   .accept-button {
-    background: green;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-   }
-   .accept-button:disabled {
-    background: gray;
-    cursor: not-allowed;
-   }
-   .reject-button {
-    background: red;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-   }
-   .reject-button:disabled {
-    background: gray;
-    cursor: not-allowed;
-   }
+    .accept-button {
+        background: green;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
 
-   .application-card {
-    background: rgba(232, 228, 232, 0.59);
-    border: 1px solid #576a91ff;
-    border-radius: 12px;
-    padding: 24px;
-   }
+    .accept-button:disabled {
+        background: gray;
+        cursor: not-allowed;
+    }
+
+    .reject-button {
+        background: red;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .reject-button:disabled {
+        background: gray;
+        cursor: not-allowed;
+    }
+
+    .application-card {
+        background: rgba(232, 228, 232, 0.59);
+        border: 1px solid #576a91ff;
+        border-radius: 12px;
+        padding: 24px;
+    }
 
 
-   .application-actions {
-    margin-top: 16px;
-   }
+    .application-actions {
+        margin-top: 16px;
+    }
 
-   .application-actions button {
-    margin-right: 12px;
-   }
+    .message-link {
+        display: inline-block;
+        margin-right: 12px;
+        color: #087e78;
+        font-weight: 600;
+    }
 
-   .application-card:not(:last-child) {
-    margin-bottom: 12px;
-   }
+    .application-actions button {
+        margin-right: 12px;
+    }
 
-   .application-status {
-    background: #2563eb;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    position: relative;
-    bottom: 8px;
+    .application-card:not(:last-child) {
+        margin-bottom: 12px;
+    }
+
+    .application-status {
+        background: #2563eb;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        position: relative;
+        bottom: 8px;
  
-   }
-
-
+    }
 </style>
 
 @code {
