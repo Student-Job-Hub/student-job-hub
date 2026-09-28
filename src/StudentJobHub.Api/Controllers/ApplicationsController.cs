@@ -20,13 +20,15 @@ public class ApplicationsController : ControllerBase
     }
 
     // ==========================================
-    // APPLY TO A JOB
+    // APPLY TO A JOB (with optional resume)
     // ==========================================
 
     [HttpPost("{jobId:int}")]
+    [RequestSizeLimit(ResumeFileRules.MaxSizeBytes + 512 * 1024)]
     public async Task<IActionResult> Create(
         int jobId,
-        CreateApplicationDto dto)
+        [FromForm] CreateApplicationDto dto,
+        IFormFile? resume = null)
     {
         var userId = GetCurrentUserId();
 
@@ -38,7 +40,8 @@ public class ApplicationsController : ControllerBase
         var result = await _applicationService.CreateAsync(
             jobId,
             dto,
-            userId);
+            userId,
+            resume);
 
         if (!result.Success)
         {
@@ -144,6 +147,60 @@ public class ApplicationsController : ControllerBase
         }
 
         return Ok(application);
+    }
+
+    // ==========================================
+    // DOWNLOAD RESUME
+    // ==========================================
+
+    [HttpGet("{id:int}/resume")]
+    public async Task<IActionResult> DownloadResume(int id)
+    {
+        var userId = GetCurrentUserId();
+
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        // Verify the user has access (applicant or job owner)
+        var application =
+            await _applicationService.GetByIdAsync(id);
+
+        if (application == null)
+        {
+            return NotFound(new
+            {
+                message = "Application not found."
+            });
+        }
+
+        var jobCheck = await _applicationService
+            .GetJobApplicationsAsync(
+                application.JobId,
+                userId);
+
+        var isJobOwner = jobCheck.Success;
+
+        if (application.ApplicantId != userId &&
+            !isJobOwner)
+        {
+            return Forbid();
+        }
+
+        var resumeResult = await _applicationService.GetResumeAsync(id);
+
+        if (resumeResult == null)
+        {
+            return NotFound(new
+            {
+                message = "No resume attached to this application."
+            });
+        }
+
+        var (fileStream, contentType, fileName) = resumeResult.Value;
+
+        return File(fileStream, contentType, fileName);
     }
 
     // ==========================================

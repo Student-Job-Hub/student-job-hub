@@ -90,6 +90,7 @@ builder.Services.AddScoped<JobService>();
 builder.Services.AddScoped<JobApplicationService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<EmailNotificationService>();
 
 // ============================================================
 // CONTROLLERS
@@ -178,6 +179,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseStaticFiles();
 
 app.UseCors("ClientPolicy");
 

@@ -16,5 +16,9 @@ public class ApplicationResponseDto
 
     public string Status { get; set; } = string.Empty;
 
+    public string? ResumeFileName { get; set; }
+
+    public string? ResumeDownloadUrl { get; set; }
+
     public DateTime AppliedAt { get; set; }
 }

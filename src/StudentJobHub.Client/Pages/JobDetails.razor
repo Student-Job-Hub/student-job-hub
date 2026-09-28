@@ -8,8 +8,14 @@
 @inject UserApiService UserService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
+@inject SiteOptions Site
 
 <PageTitle>@(job?.Title ?? "Job Details") | Student Job Hub</PageTitle>
+
+<SeoHead Title="@(job?.Title ?? "Job Details")"
+         Description="@(job != null ? $"{job.Title} — Budget: GH₵ {job.Budget:N2}, deadline {job.Deadline:dd MMM yyyy}. {job.Description}" : "View job details on Student Job Hub.")"
+         UrlPath="@($"jobs/{Id}")"
+         Type="article" />
 
 <div class="job-details-page">
 
@@ -166,6 +172,26 @@
                             <label for="application-message">Message to the poster</label>
                             <InputTextArea id="application-message" class="form-control" @bind-Value="application.Message" rows="5" />
                             <ValidationMessage For="@(() => application.Message)" />
+
+                            <div class="resume-upload-section">
+                                <label for="resume-upload" class="resume-label">
+                                    <i class="bi bi-file-earmark-pdf"></i> Attach CV/Resume (PDF, DOC, DOCX — max 5 MB)
+                                </label>
+                                <InputFile id="resume-upload" class="form-control" OnChange="OnResumeSelected" accept=".pdf,.doc,.docx" />
+                                @if (!string.IsNullOrEmpty(selectedFileName))
+                                {
+                                    <div class="selected-file-info">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        <span>@selectedFileName</span>
+                                        <button type="button" class="remove-file-btn" @onclick="RemoveSelectedFile">✕</button>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(resumeError))
+                                {
+                                    <p class="error-message">@resumeError</p>
+                                }
+                            </div>
+
                             @if (!string.IsNullOrEmpty(applicationError))
                             {
                                 <p class="error-message">@applicationError</p>
@@ -192,6 +218,12 @@
                     </button>
                 }
 
+            </div>
+
+            <div class="share-row">
+                <button type="button" class="share-link-btn" @onclick="CopyShareLinkAsync">
+                    <i class="bi bi-share"></i> @(shareCopied ? "Link copied!" : "Copy share link")
+                </button>
             </div>
 
         </div>
@@ -435,6 +467,72 @@
         }
     }
 
+    .share-row {
+        margin-top: 16px;
+    }
+
+    .share-link-btn {
+        background: none;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 14px;
+        color: #2563eb;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .share-link-btn:hover {
+        background: #eff6ff;
+    }
+
+    .resume-upload-section {
+        margin-top: 16px;
+    }
+
+    .resume-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .resume-label i {
+        color: #dc2626;
+    }
+
+    .selected-file-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 10px 14px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #065f46;
+    }
+
+    .selected-file-info i {
+        color: #10b981;
+    }
+
+    .remove-file-btn {
+        background: none;
+        border: none;
+        color: #991b1b;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: auto;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .remove-file-btn:hover {
+        background: #fee2e2;
+    }
+
     @@media (max-width: 700px) {
 
         .job-details-card {
@@ -474,6 +572,14 @@
     private CreateApplicationModel application = new();
     private string? applicationError;
 
+    // Resume upload state
+    private IBrowserFile? selectedResume;
+    private string? selectedFileName;
+    private string? resumeError;
+
+    // Share link (Open Graph preview) state
+    private bool shareCopied;
+
     private string? errorMessage;
 
     protected override async Task OnParametersSetAsync()
@@ -512,6 +618,64 @@
         }
     }
 
+    private void OnResumeSelected(InputFileChangeEventArgs e)
+    {
+        resumeError = null;
+        selectedResume = null;
+        selectedFileName = null;
+
+        var file = e.File;
+
+        var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+
+        if (!allowedExtensions.Contains(extension))
+        {
+            resumeError = "Only PDF, DOC, and DOCX files are allowed.";
+            return;
+        }
+
+        if (file.Size > 5 * 1024 * 1024)
+        {
+            resumeError = "File size must be 5 MB or smaller.";
+            return;
+        }
+
+        selectedResume = file;
+        selectedFileName = file.Name;
+    }
+
+    private async Task CopyShareLinkAsync()
+    {
+        // The /share/... URL is server-rendered with Open Graph tags so social
+        // networks show a rich preview, then it redirects people to this page.
+        var url = $"{Site.ApiBaseUrl.TrimEnd('/')}/share/jobs/{Id}";
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+            shareCopied = true;
+            StateHasChanged();
+
+            await Task.Delay(2500);
+        }
+        catch (Exception)
+        {
+            // Clipboard can be blocked by the browser; nothing else to do.
+        }
+        finally
+        {
+            shareCopied = false;
+        }
+    }
+
+    private void RemoveSelectedFile()
+    {
+        selectedResume = null;
+        selectedFileName = null;
+        resumeError = null;
+    }
+
     private async Task SubmitApplicationAsync()
     {
         isSubmittingApplication = true;
@@ -519,7 +683,23 @@
 
         try
         {
-            var response = await ApplicationService.ApplyAsync(Id, application);
+            Stream? resumeStream = null;
+            string? resumeName = null;
+
+            if (selectedResume != null)
+            {
+                resumeStream = selectedResume.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+                resumeName = selectedResume.Name;
+            }
+
+            var response = await ApplicationService.ApplyAsync(
+                Id, application, resumeStream, resumeName);
+
+            if (resumeStream != null)
+            {
+                await resumeStream.DisposeAsync();
+            }
+
             if (response.IsSuccessStatusCode)
             {
                 Navigation.NavigateTo("/my-applications");
@@ -603,6 +783,9 @@
     {
         showApplicationForm = false;
         applicationError = null;
+        resumeError = null;
+        selectedResume = null;
+        selectedFileName = null;
         application = new CreateApplicationModel();
     }
 }

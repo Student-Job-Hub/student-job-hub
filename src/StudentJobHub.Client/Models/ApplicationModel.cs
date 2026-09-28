@@ -16,5 +16,9 @@ public class ApplicationModel
 
     public string Status { get; set; } = "Pending";
 
+    public string? ResumeFileName { get; set; }
+
+    public string? ResumeDownloadUrl { get; set; }
+
     public DateTime AppliedAt { get; set; }
 }

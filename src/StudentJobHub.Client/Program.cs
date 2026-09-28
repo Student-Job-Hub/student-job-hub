@@ -12,6 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddMudServices();
 
 var apiBaseUrl = "http://localhost:5205/";
+builder.Services.AddSingleton(new SiteOptions(apiBaseUrl));
 
 // Authentication service
 builder.Services.AddScoped<AuthService>(sp =>
