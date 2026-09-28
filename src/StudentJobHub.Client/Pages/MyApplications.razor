@@ -92,17 +92,17 @@
 
                     <div class="application-footer">
 
-                        <a
-                            href="/jobs/@application.JobId"
-                            class="details-button">
+                        <a href="/jobs/@application.JobId" class="details-button">
                             View Job
+                        </a>
+
+                        <a href="/messages/@application.Id" class="details-button message-button">
+                            Message poster
                         </a>
 
                         @if (IsPending(application.Status))
                         {
-                            <button
-                                class="withdraw-button"
-                                @onclick="() => WithdrawApplication(application.Id)">
+                            <button class="withdraw-button" @onclick="() => WithdrawApplication(application.Id)">
                                 Withdraw Application
                             </button>
                         }
@@ -118,7 +118,6 @@
 </div>
 
 <style>
-
     .applications-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -153,7 +152,7 @@
     }
 
     .browse-button {
-        background:  #2563eb;
+        background: #2563eb;
         color: white;
     }
 
@@ -161,6 +160,11 @@
         border: 1px solid ##576a91ff;
         color: #0953c9ff;
         text-decoration: underline;
+    }
+
+    .message-button {
+        border-color: #087e78;
+        color: #087e78;
     }
 
     .applications-summary {
@@ -324,6 +328,7 @@
 
         .browse-button,
         .details-button,
+        .message-button,
         .withdraw-button {
             text-align: center;
             width: 100%;
@@ -333,7 +338,6 @@
             align-self: flex-start;
         }
     }
-
 </style>
 
 @code {

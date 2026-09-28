@@ -1,0 +1,323 @@
+@page "/messages/{ApplicationId:int}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using StudentJobHub.Client.Models
+@using StudentJobHub.Client.Services
+@inject AuthService AuthService
+@inject IConfiguration Configuration
+@implements IAsyncDisposable
+
+<PageTitle>Messages | Student Job Hub</PageTitle>
+
+<section class="conversation">
+    <header class="conversation-header">
+        <a href="/my-applications" aria-label="Back to applications">&larr;</a>
+        <div>
+            <h1>Conversation</h1>
+            <p>About application #@ApplicationId</p>
+        </div>
+        <span class="connection-state">@(isConnected ? "Connected" : "Connecting")</span>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <p class="error-message">@errorMessage</p>
+    }
+
+    <div class="message-list">
+        @if (isLoading)
+        {
+            <p class="empty-state">Loading conversation...</p>
+        }
+        else if (messages.Count == 0)
+        {
+            <p class="empty-state">No messages yet. Start the conversation.</p>
+        }
+        else
+        {
+            @foreach (var message in messages)
+            {
+                <article class="message" @key="message.Id">
+                    <div class="message-meta">
+                        <strong>@message.SenderName</strong>
+                        <time>@message.SentAt.ToLocalTime().ToString("g")</time>
+                    </div>
+                    <p>@message.Content</p>
+                </article>
+            }
+        }
+    </div>
+
+    <form class="message-form" @onsubmit="SendMessageAsync" @onsubmit:preventDefault>
+        <textarea @bind="draftMessage" maxlength="2000" rows="2" placeholder="Write a message..." aria-label="Message"
+                  disabled="@(!isConnected)"></textarea>
+        <button type="submit" disabled="@(!isConnected || string.IsNullOrWhiteSpace(draftMessage))">Send</button>
+    </form>
+</section>
+
+<style>
+    .conversation {
+        width: min(760px, calc(100% - 32px));
+        height: min(720px, calc(100vh - 48px));
+        min-height: 420px;
+        margin: 24px auto;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #d6dce5;
+        background: #fff;
+    }
+
+    .conversation-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .conversation-header>a {
+        color: #155e75;
+        font-size: 24px;
+        text-decoration: none;
+    }
+
+    .conversation-header h1,
+    .conversation-header p {
+        margin: 0;
+    }
+
+    .conversation-header h1 {
+        font-size: 20px;
+    }
+
+    .conversation-header p,
+    .message time {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .connection-state {
+        margin-left: auto;
+        color: #166534;
+        font-size: 13px;
+    }
+
+    .message-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f6f8fa;
+    }
+
+    .message {
+        max-width: 80%;
+        align-self: flex-start;
+        padding: 10px 13px;
+        border: 1px solid #dbe3e8;
+        background: white;
+    }
+
+    .message-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .message-meta strong {
+        font-size: 13px;
+    }
+
+    .message p {
+        margin: 5px 0 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .empty-state {
+        margin: auto;
+        color: #64748b;
+    }
+
+    .message-form {
+        display: flex;
+        gap: 10px;
+        padding: 14px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .message-form textarea {
+        flex: 1;
+        resize: vertical;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        font: inherit;
+    }
+
+    .message-form button {
+        align-self: stretch;
+        padding: 0 20px;
+        border: 0;
+        background: #087e78;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .message-form button:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .error-message {
+        margin: 10px 20px 0;
+        color: #b42318;
+    }
+
+    @@media (max-width: 540px) {
+        .conversation {
+            width: 100%;
+            height: calc(100vh - 24px);
+            min-height: 360px;
+            margin: 12px auto;
+        }
+
+        .message-form {
+            align-items: stretch;
+        }
+
+        .message-form button {
+            padding: 0 12px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int ApplicationId { get; set; }
+
+    private readonly List<DirectMessageModel> messages = new();
+    private HubConnection? connection;
+    private int? activeApplicationId;
+    private string draftMessage = string.Empty;
+    private string? errorMessage;
+    private bool isLoading = true;
+    private bool isConnected;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (activeApplicationId == ApplicationId && connection != null)
+        {
+            return;
+        }
+
+        if (connection != null)
+        {
+            await connection.DisposeAsync();
+        }
+
+        activeApplicationId = ApplicationId;
+        messages.Clear();
+        isLoading = true;
+        isConnected = false;
+        errorMessage = null;
+
+        try
+        {
+            var apiBaseUrl = Configuration["ApiBaseUrl"] ?? "http://localhost:5205/";
+            connection = new HubConnectionBuilder()
+                .WithUrl(new Uri(new Uri(apiBaseUrl), "hubs/messages"), options =>
+                {
+                    options.AccessTokenProvider = AuthService.GetTokenAsync;
+                })
+                .WithAutomaticReconnect()
+                .Build();
+
+            connection.On<DirectMessageModel>("ReceiveMessage", message =>
+                InvokeAsync(() => AddMessage(message)));
+
+            connection.Reconnected += async _ =>
+            {
+                try
+                {
+                    var history = await connection.InvokeAsync<List<DirectMessageModel>>(
+                        "JoinConversation",
+                        ApplicationId);
+                    await InvokeAsync(() =>
+                    {
+                        isConnected = true;
+                        foreach (var message in history)
+                        {
+                            AddMessage(message);
+                        }
+                    });
+                }
+                catch
+                {
+                    await InvokeAsync(() => isConnected = false);
+                }
+            };
+            connection.Reconnecting += _ => InvokeAsync(() => isConnected = false);
+
+            await connection.StartAsync();
+            isConnected = true;
+
+            var history = await connection.InvokeAsync<List<DirectMessageModel>>(
+                "JoinConversation",
+                ApplicationId);
+
+            foreach (var message in history)
+            {
+                AddMessage(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to open this conversation: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SendMessageAsync()
+    {
+        var content = draftMessage.Trim();
+        if (string.IsNullOrEmpty(content) || connection == null)
+        {
+            return;
+        }
+
+        try
+        {
+            await connection.InvokeAsync("SendMessage", ApplicationId, content);
+            draftMessage = string.Empty;
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Message could not be sent: {ex.Message}";
+        }
+    }
+
+    private void AddMessage(DirectMessageModel message)
+    {
+        if (messages.All(existing => existing.Id != message.Id))
+        {
+            messages.Add(message);
+            messages.Sort((left, right) => left.SentAt.CompareTo(right.SentAt));
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (connection != null)
+        {
+            await connection.DisposeAsync();
+        }
+    }
+}
