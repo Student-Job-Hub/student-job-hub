@@ -69,16 +69,13 @@
             {
                 <div class="service-card">
                     <div class="service-header">
-                        <div>
-                            <h2>@service.Title</h2>
-                            <span class="service-category">@service.Category</span>
-                        </div>
-                        <span class="service-price">GH₵ @service.Price.ToString("N2")</span>
+                        <h2 style="position: relative; top: 5px;">@service.Title</h2>
+                        <span class="badge" style="color:#0369a1 ; background-color: #ffffff">@service.Category</span>
                     </div>
-                    <p class="service-description">@service.Description</p>
-                    <div class="service-meta">
-                        <span><i class="bi bi-person"></i> By @service.ProviderName</span>
-                        <span><i class="bi bi-calendar3"></i> Posted @service.CreatedAt.ToString("dd MMM yyyy")</span>
+                    <p style="font-size: 18px; position: relative; top: 5px;">@service.Description</p>
+                    <div class="meta" style="margin-top: 10px; margin-bottom: 5px; font-weight: bold; font-size: 16px;">
+                        <strong>GH₵ @service.Price.ToString("N2")</strong>
+                        <span>By @service.ProviderName</span>
                     </div>
                     <div class="actions">
                         <a href="/services/@service.Id" class="details-button">View Details</a>
@@ -108,7 +105,7 @@
 
     .service-card {
     border: 1px solid #e2e8f0;
-     background-color: #f7f2f2;
+    background-color: #f7f2f2ff;
     padding: 16px;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -118,47 +115,9 @@
    }
 
    .service-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
+    font-size: 24px;
+    font-weight: bold;
     margin-top: 10px;
-   }
-
-   .service-header h2 {
-    margin: 0 0 8px;
-    font-size: 1.35rem;
-   }
-
-   .service-category {
-    color: #0369a1;
-    font-size: 0.85rem;
-    font-weight: 600;
-   }
-
-   .service-price {
-    color: #111827;
-    font-size: 1.1rem;
-    font-weight: 700;
-    white-space: nowrap;
-   }
-
-   .service-description {
-    font-size: 1rem;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-   }
-
-   .service-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin: 14px 0;
-    color: #4b5563;
-    font-size: 0.9rem;
    }
     .details-button{
         background-color: #2563eb;

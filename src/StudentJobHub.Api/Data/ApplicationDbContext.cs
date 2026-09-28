@@ -22,10 +22,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Notification> Notifications => Set<Notification>();
 
-    public DbSet<JobBookmark> JobBookmarks => Set<JobBookmark>();
-
-    public DbSet<ServiceBooking> ServiceBookings => Set<ServiceBooking>();
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -99,51 +95,5 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        // ==========================================
-        // JOB BOOKMARK
-        // ==========================================
-
-        builder.Entity<JobBookmark>()
-            .HasIndex(b => new { b.UserId, b.JobId })
-            .IsUnique();
-
-        builder.Entity<JobBookmark>()
-            .HasOne(b => b.Job)
-            .WithMany()
-            .HasForeignKey(b => b.JobId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.Entity<JobBookmark>()
-            .HasOne(b => b.User)
-            .WithMany()
-            .HasForeignKey(b => b.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ==========================================
-        // SERVICE BOOKING
-        // ==========================================
-
-        builder.Entity<ServiceBooking>()
-            .HasOne(b => b.Service)
-            .WithMany()
-            .HasForeignKey(b => b.ServiceId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<ServiceBooking>()
-            .HasOne(b => b.Client)
-            .WithMany()
-            .HasForeignKey(b => b.ClientId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<ServiceBooking>()
-            .HasOne(b => b.Provider)
-            .WithMany()
-            .HasForeignKey(b => b.ProviderId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<ServiceBooking>()
-            .Property(b => b.ProposedPrice)
-            .HasPrecision(18, 2);
     }
 }

@@ -4,7 +4,6 @@
 @using StudentJobHub.Client.Services
 
 @inject JobApiService JobApiService
-@inject ExportApiService ExportService
 @inject ToastService ToastService
 
 <PageTitle>My Jobs</PageTitle>
@@ -21,17 +20,9 @@
             </p>
         </div>
 
-        <div style="display:flex; gap:10px; align-items:center;">
-            @if (jobs.Count > 0)
-            {
-                <button class="export-btn-outline" @onclick="ExportJobsCsvAsync" disabled="@isExporting">
-                    <i class="bi bi-filetype-csv"></i> @(isExporting ? "Exporting..." : "Export CSV")
-                </button>
-            }
-            <a href="/post-job" class="post-job-button">
-                + Post a Job
-            </a>
-        </div>
+        <a href="/post-job" class="post-job-button">
+            + Post a Job
+        </a>
 
     </div>
 
@@ -201,24 +192,6 @@
         align-items: center;
     }
 
-    .export-btn-outline {
-        background: white;
-        color: #0f172a;
-        border: 1px solid #cbd5e1;
-        padding: 12px 18px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s ease;
-    }
-
-    .export-btn-outline:hover {
-        background: #f1f5f9;
-        color: #2563eb;
-    }
 
 </style>
 
@@ -320,33 +293,6 @@
         finally
         {
             busyJobId = null;
-        }
-    }
-
-    private bool isExporting = false;
-
-    private async Task ExportJobsCsvAsync()
-    {
-        isExporting = true;
-        try
-        {
-            var ok = await ExportService.DownloadJobsCsvAsync();
-            if (ok)
-            {
-                ToastService.ShowSuccess("Posted jobs CSV exported successfully!");
-            }
-            else
-            {
-                ToastService.ShowError("Could not export posted jobs.");
-            }
-        }
-        catch (Exception ex)
-        {
-            ToastService.ShowError($"Export error: {ex.Message}");
-        }
-        finally
-        {
-            isExporting = false;
         }
     }
 }

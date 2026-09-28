@@ -4,9 +4,7 @@ namespace StudentJobHub.Client.Services;
 
 public class ThemeService
 {
-    private const string ThemeStorageKey = "theme";
     private readonly IJSRuntime _jsRuntime;
-
     public bool IsDarkMode { get; private set; }
     public event Action? OnThemeChanged;
 
@@ -17,24 +15,38 @@ public class ThemeService
 
     public async Task InitializeThemeAsync()
     {
-        var storedTheme = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", ThemeStorageKey);
-        IsDarkMode = storedTheme == "dark";
-        await ApplyThemeAsync();
+        try
+        {
+            var storedTheme = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "theme");
+            IsDarkMode = storedTheme == "dark";
+            await ApplyThemeAsync();
+        }
+        catch
+        {
+            // Fallback default
+            IsDarkMode = false;
+        }
     }
 
     public async Task ToggleThemeAsync()
     {
         IsDarkMode = !IsDarkMode;
-        await _jsRuntime.InvokeVoidAsync(
-            "localStorage.setItem",
-            ThemeStorageKey,
-            IsDarkMode ? "dark" : "light");
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "theme", IsDarkMode ? "dark" : "light");
+        }
+        catch { }
+
         await ApplyThemeAsync();
         OnThemeChanged?.Invoke();
     }
 
     private async Task ApplyThemeAsync()
     {
-        await _jsRuntime.InvokeVoidAsync("document.body.classList.toggle", "dark-mode", IsDarkMode);
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("document.body.classList.toggle", "dark-mode", IsDarkMode);
+        }
+        catch { }
     }
 }

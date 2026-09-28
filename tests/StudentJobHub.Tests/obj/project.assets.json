@@ -3299,23 +3299,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\DELL\\.nuget\\packages\\": {},
+    "C:\\Users\\USER\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\DELL\\OneDrive\\Desktop\\USED FILE\\student hub\\student-jub-hub\\tests\\StudentJobHub.Tests\\StudentJobHub.Tests.csproj",
+      "projectUniqueName": "C:\\Users\\USER\\Downloads\\StudentJobHub\\tests\\StudentJobHub.Tests\\StudentJobHub.Tests.csproj",
       "projectName": "StudentJobHub.Tests",
-      "projectPath": "C:\\Users\\DELL\\OneDrive\\Desktop\\USED FILE\\student hub\\student-jub-hub\\tests\\StudentJobHub.Tests\\StudentJobHub.Tests.csproj",
-      "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\DELL\\OneDrive\\Desktop\\USED FILE\\student hub\\student-jub-hub\\tests\\StudentJobHub.Tests\\obj\\",
+      "projectPath": "C:\\Users\\USER\\Downloads\\StudentJobHub\\tests\\StudentJobHub.Tests\\StudentJobHub.Tests.csproj",
+      "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\USER\\Downloads\\StudentJobHub\\tests\\StudentJobHub.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3331,8 +3331,8 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\DELL\\OneDrive\\Desktop\\USED FILE\\student hub\\student-jub-hub\\src\\StudentJobHub.Api\\StudentJobHub.Api.csproj": {
-              "projectPath": "C:\\Users\\DELL\\OneDrive\\Desktop\\USED FILE\\student hub\\student-jub-hub\\src\\StudentJobHub.Api\\StudentJobHub.Api.csproj"
+            "C:\\Users\\USER\\Downloads\\StudentJobHub\\src\\StudentJobHub.Api\\StudentJobHub.Api.csproj": {
+              "projectPath": "C:\\Users\\USER\\Downloads\\StudentJobHub\\src\\StudentJobHub.Api\\StudentJobHub.Api.csproj"
             }
           }
         }
@@ -3347,7 +3347,7 @@
         "auditLevel": "low",
         "auditMode": "all"
       },
-      "SdkAnalysisLevel": "10.0.300"
+      "SdkAnalysisLevel": "10.0.400"
     },
     "frameworks": {
       "net10.0": {
@@ -3391,7 +3391,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
