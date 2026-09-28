@@ -3,9 +3,11 @@
 @using StudentJobHub.Client.Models
 @using StudentJobHub.Client.Services
 @inject JobApiService JobService
+@inject BookmarkApiService BookmarkService
 @inject ApplicationApiService ApplicationService
 @inject AuthService AuthService
 @inject UserApiService UserService
+@inject ToastService ToastService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
@@ -69,18 +71,26 @@
 
                 </div>
 
-                @if (job.IsOpen)
-                {
-                    <span class="status open">
-                        Open
-                    </span>
-                }
-                else
-                {
-                    <span class="status closed">
-                        Closed
-                    </span>
-                }
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    @if (job.IsOpen)
+                    {
+                        <span class="status open">
+                            Open
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="status closed">
+                            Closed
+                        </span>
+                    }
+
+                    <button class="bookmark-toggle-btn"
+                            title="@(isBookmarked ? "Remove Bookmark" : "Save Job")"
+                            @onclick="ToggleBookmarkAsync">
+                        <i class="bi @(isBookmarked ? "bi-bookmark-fill text-primary" : "bi-bookmark")" style="font-size: 1.4rem;"></i>
+                    </button>
+                </div>
 
             </div>
 
@@ -455,6 +465,21 @@
 
     }
 
+    .bookmark-toggle-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+
+    .bookmark-toggle-btn:hover {
+        transform: scale(1.2);
+    }
+
 </style>
 
 @code {
@@ -466,6 +491,7 @@
     private string? currentUserId;
     private bool isOwner => !string.IsNullOrEmpty(currentUserId) && job?.PostedById == currentUserId;
 
+    private bool isBookmarked = false;
     private bool isLoading = true;
     private bool isActionBusy = false;
 
@@ -486,6 +512,7 @@
         isLoading = true;
         errorMessage = null;
         job = null;
+        isBookmarked = false;
 
         try
         {
@@ -500,6 +527,15 @@
             {
                 var currentUser = await UserService.GetCurrentUserAsync();
                 currentUserId = currentUser?.Id;
+
+                try
+                {
+                    isBookmarked = await BookmarkService.IsBookmarkedAsync(Id);
+                }
+                catch
+                {
+                    isBookmarked = false;
+                }
             }
         }
         catch
@@ -509,6 +545,60 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task ToggleBookmarkAsync()
+    {
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo($"/login?returnUrl=/jobs/{Id}");
+            return;
+        }
+
+        if (isBookmarked)
+        {
+            isBookmarked = false;
+            try
+            {
+                var res = await BookmarkService.RemoveBookmarkAsync(Id);
+                if (res.IsSuccessStatusCode)
+                {
+                    ToastService.ShowSuccess("Job removed from bookmarks.");
+                }
+                else
+                {
+                    isBookmarked = true;
+                    ToastService.ShowError("Could not remove bookmark.");
+                }
+            }
+            catch
+            {
+                isBookmarked = true;
+                ToastService.ShowError("Error updating bookmark.");
+            }
+        }
+        else
+        {
+            isBookmarked = true;
+            try
+            {
+                var res = await BookmarkService.BookmarkJobAsync(Id);
+                if (res.IsSuccessStatusCode)
+                {
+                    ToastService.ShowSuccess("Job saved to your bookmarks!");
+                }
+                else
+                {
+                    isBookmarked = false;
+                    ToastService.ShowError("Could not bookmark job.");
+                }
+            }
+            catch
+            {
+                isBookmarked = false;
+                ToastService.ShowError("Error bookmarking job.");
+            }
         }
     }
 

@@ -1,6 +1,8 @@
 @page "/my-applications"
 
 @inject ApplicationApiService ApplicationService
+@inject ExportApiService ExportService
+@inject ToastService ToastService
 @inject IJSRuntime JSRuntime
 
 <PageTitle>My Applications - Student Job Hub</PageTitle>
@@ -13,9 +15,20 @@
             <p>Track the jobs you have applied for.</p>
         </div>
 
-        <a href="/jobs" class="browse-button">
-            Browse Jobs
-        </a>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            @if (applications.Count > 0)
+            {
+                <button class="details-button" style="background:white; cursor:pointer;" @onclick="ExportCsvAsync" disabled="@isExporting">
+                    <i class="bi bi-filetype-csv"></i> @(isExporting ? "Exporting..." : "Export CSV")
+                </button>
+                <button class="details-button" style="background:white; cursor:pointer;" @onclick="PrintPdfAsync">
+                    <i class="bi bi-printer"></i> Print / PDF
+                </button>
+            }
+            <a href="/jobs" class="browse-button">
+                Browse Jobs
+            </a>
+        </div>
     </div>
 
     @if (isLoading)
@@ -401,6 +414,40 @@
         {
             errorMessage =
                 $"Unable to withdraw the application: {ex.Message}";
+        }
+    }
+
+    private bool isExporting = false;
+
+    private async Task ExportCsvAsync()
+    {
+        isExporting = true;
+        try
+        {
+            var ok = await ExportService.DownloadApplicationsCsvAsync();
+            if (ok) ToastService.ShowSuccess("Applications history CSV downloaded!");
+            else ToastService.ShowError("Could not download applications CSV.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Export error: {ex.Message}");
+        }
+        finally
+        {
+            isExporting = false;
+        }
+    }
+
+    private async Task PrintPdfAsync()
+    {
+        try
+        {
+            await ExportService.OpenPrintReportAsync();
+            ToastService.ShowSuccess("Printable report opened!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Print error: {ex.Message}");
         }
     }
 

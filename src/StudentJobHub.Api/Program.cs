@@ -75,6 +75,9 @@ builder.Services.AddScoped<JobService>();
 builder.Services.AddScoped<JobApplicationService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<JobBookmarkService>();
+builder.Services.AddScoped<ServiceBookingService>();
+builder.Services.AddScoped<ExportService>();
 
 // ============================================================
 // CONTROLLERS

@@ -3,6 +3,8 @@
 @inject AuthService AuthService
 @inject ApplicationApiService ApplicationService
 @inject ServiceApiService ServiceApiService
+@inject BookmarkApiService BookmarkService
+@inject BookingApiService BookingService
 @inject NotificationService NotificationService
 @inject NavigationManager Navigation
 @using StudentJobHub.Client
@@ -105,6 +107,26 @@
                 </div>
             </div>
 
+            <div class="stat-card">
+                <!-- Bookmark Icon for Saved Jobs -->
+                <div class="stat-icon"><i class="bi bi-bookmark-heart-fill"></i></div>
+
+                <div>
+                    <h3>@savedJobCount</h3>
+                    <p>Saved Jobs</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <!-- Calendar Icon for Service Bookings -->
+                <div class="stat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+
+                <div>
+                    <h3>@bookingCount</h3>
+                    <p>Service Bookings</p>
+                </div>
+            </div>
+
         </div>
 
         <!-- Quick Actions -->
@@ -124,6 +146,16 @@
                     <div>
                         <h3>Browse Jobs</h3>
                         <p>Find available jobs on campus.</p>
+                    </div>
+                </a>
+
+                <a href="/saved-jobs" class="action-card">
+                    <!-- Bookmark Icon for Saved Jobs -->
+                    <span class="action-icon"><i class="bi bi-bookmark-heart"></i></span>
+
+                    <div>
+                        <h3>Saved Jobs</h3>
+                        <p>Access your bookmarked jobs.</p>
                     </div>
                 </a>
 
@@ -164,6 +196,26 @@
                     <div>
                         <h3>Services</h3>
                         <p>Browse campus freelance services.</p>
+                    </div>
+                </a>
+
+                <a href="/my-bookings" class="action-card">
+                    <!-- Calendar Icon for Bookings -->
+                    <span class="action-icon"><i class="bi bi-calendar-check"></i></span>
+
+                    <div>
+                        <h3>Service Bookings</h3>
+                        <p>Manage requests and client bookings.</p>
+                    </div>
+                </a>
+
+                <a href="/export-data" class="action-card">
+                    <!-- Download Icon for Export Data -->
+                    <span class="action-icon"><i class="bi bi-download"></i></span>
+
+                    <div>
+                        <h3>Export Data</h3>
+                        <p>Download CSV history and PDF portfolio.</p>
                     </div>
                 </a>
 
@@ -537,6 +589,8 @@
     private int serviceCount;
     private int myServiceCount;
     private int unreadNotificationCount;
+    private int savedJobCount;
+    private int bookingCount;
 
     private bool isLoading = true;
     private bool isUnauthorized = false;
@@ -602,6 +656,27 @@
                 catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     isUnauthorized = true;
+                }
+
+                try
+                {
+                    var ids = await BookmarkService.GetBookmarkIdsAsync();
+                    savedJobCount = ids.Count;
+                }
+                catch
+                {
+                    savedJobCount = 0;
+                }
+
+                try
+                {
+                    var clientBookings = await BookingService.GetMyRequestsAsync();
+                    var providerBookings = await BookingService.GetReceivedBookingsAsync();
+                    bookingCount = clientBookings.Count + providerBookings.Count;
+                }
+                catch
+                {
+                    bookingCount = 0;
                 }
 
                 if (isUnauthorized)
