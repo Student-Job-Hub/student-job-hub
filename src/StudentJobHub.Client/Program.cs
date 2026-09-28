@@ -71,6 +71,7 @@ builder.Services.AddScoped<AdminApiService>(sp =>
 // UI Polish services
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<SettingsService>();
 
 var host = builder.Build();
 

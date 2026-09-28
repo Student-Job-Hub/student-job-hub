@@ -1,0 +1,728 @@
+@page "/settings"
+@using StudentJobHub.Client.Models
+@using StudentJobHub.Client.Services
+@inject SettingsService SettingsService
+@inject ThemeService ThemeService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>Settings | Student Job Hub</PageTitle>
+
+<div class="settings-container">
+    <div class="settings-header">
+        <div class="settings-header-text">
+            <h1 class="settings-title">
+                <i class="bi bi-gear-wide-connected me-2"></i>Settings & Preferences
+            </h1>
+            <p class="settings-subtitle">Customize your notifications, appearance, privacy, and application preferences.</p>
+        </div>
+        <div class="settings-header-actions">
+            <button type="button" class="btn btn-outline-secondary" @onclick="ResetDefaultsAsync" disabled="@isSaving">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset Defaults
+            </button>
+            <button type="button" class="btn btn-primary" @onclick="SaveSettingsAsync" disabled="@isSaving">
+                <i class="bi bi-check2-circle me-1"></i>@(isSaving ? "Saving..." : "Save Changes")
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="settings-card text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading settings...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading your settings...</p>
+        </div>
+    }
+    else
+    {
+        <div class="settings-layout">
+            <!-- Sidebar Navigation Tabs -->
+            <div class="settings-nav">
+                <button type="button" class="nav-tab @(activeTab == "preferences" ? "active" : "")" @onclick='() => SetActiveTab("preferences")'>
+                    <i class="bi bi-palette me-2"></i>
+                    <span>Preferences</span>
+                </button>
+                <button type="button" class="nav-tab @(activeTab == "notifications" ? "active" : "")" @onclick='() => SetActiveTab("notifications")'>
+                    <i class="bi bi-bell me-2"></i>
+                    <span>Notifications</span>
+                </button>
+                <button type="button" class="nav-tab @(activeTab == "privacy" ? "active" : "")" @onclick='() => SetActiveTab("privacy")'>
+                    <i class="bi bi-shield-lock me-2"></i>
+                    <span>Privacy & Security</span>
+                </button>
+                <button type="button" class="nav-tab @(activeTab == "app" ? "active" : "")" @onclick='() => SetActiveTab("app")'>
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span>App & About</span>
+                </button>
+            </div>
+
+            <!-- Tab Content Panel -->
+            <div class="settings-content">
+                @if (activeTab == "preferences")
+                {
+                    <div class="settings-card">
+                        <div class="card-header-clean">
+                            <h3 class="section-title"><i class="bi bi-palette me-2 text-primary"></i>Display & Appearance</h3>
+                            <p class="section-description">Manage visual themes, density, and local display formatting.</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Dark Mode</label>
+                                <span class="setting-hint">Toggle between light and dark color schemes for enhanced reading comfort.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="darkModeSwitch"
+                                           checked="@settings.IsDarkMode"
+                                           @onchange="OnThemeToggleChanged" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Compact View</label>
+                                <span class="setting-hint">Display denser cards and lists on jobs and services marketplace feeds.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="compactViewSwitch"
+                                           @bind="settings.CompactView" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Default Currency</label>
+                                <span class="setting-hint">Select the standard currency displayed across campus job budgets and services.</span>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select setting-select" @bind="settings.PreferredCurrency">
+                                    <option value="GHS (GH₵)">GHS (GH₵ - Ghana Cedi)</option>
+                                    <option value="USD ($)">USD ($ - US Dollar)</option>
+                                    <option value="GBP (£)">GBP (£ - British Pound)</option>
+                                    <option value="EUR (€)">EUR (€ - Euro)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Default Job Listing Filter</label>
+                                <span class="setting-hint">Choose which job opportunities are shown first when browsing.</span>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select setting-select" @bind="settings.DefaultJobFilter">
+                                    <option value="All">All Jobs (Open & Closed)</option>
+                                    <option value="Open">Open Positions Only</option>
+                                    <option value="Recent">Recently Added</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "notifications")
+                {
+                    <div class="settings-card">
+                        <div class="card-header-clean">
+                            <h3 class="section-title"><i class="bi bi-bell me-2 text-primary"></i>Notification Preferences</h3>
+                            <p class="section-description">Control how and when Student Job Hub alerts you about opportunities and updates.</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">In-App Real-Time Alerts</label>
+                                <span class="setting-hint">Receive live push toasts and bell badge updates via SignalR while browsing.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="inAppSwitch"
+                                           @bind="settings.InAppNotifications" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Application Status Updates</label>
+                                <span class="setting-hint">Get notified instantly whenever an employer accepts, reviews, or updates your application.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="appStatusSwitch"
+                                           @bind="settings.ApplicationStatusAlerts" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Direct Message Alerts</label>
+                                <span class="setting-hint">Receive alerts when students or job posters send you messages about an application.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="msgAlertsSwitch"
+                                           @bind="settings.DirectMessageAlerts" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Email Notifications</label>
+                                <span class="setting-hint">Forward critical job application and security notifications to your university email.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="emailSwitch"
+                                           @bind="settings.EmailNotifications" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Weekly Opportunity Digest</label>
+                                <span class="setting-hint">Receive a weekly summary of trending campus jobs and freelance service gigs.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="digestSwitch"
+                                           @bind="settings.WeeklyDigest" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "privacy")
+                {
+                    <div class="settings-card">
+                        <div class="card-header-clean">
+                            <h3 class="section-title"><i class="bi bi-shield-lock me-2 text-primary"></i>Privacy & Profile Visibility</h3>
+                            <p class="section-description">Manage who can view your profile, contact details, and student service listings.</p>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Profile Visibility</label>
+                                <span class="setting-hint">Control who can discover and view your public talent profile.</span>
+                            </div>
+                            <div class="setting-control">
+                                <select class="form-select setting-select" @bind="settings.ProfileVisibility">
+                                    <option value="CampusOnly">Campus Only (Logged-in students & lecturers)</option>
+                                    <option value="Public">Public (Everyone on Student Job Hub)</option>
+                                    <option value="Private">Private (Hidden from searches)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Share Email with Job Posters</label>
+                                <span class="setting-hint">Allow job owners to view your verified email address when inspecting your application.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="shareEmailSwitch"
+                                           @bind="settings.ShowEmailToEmployers" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Display Phone Number on Services</label>
+                                <span class="setting-hint">Show your contact phone number on freelance service cards you offer.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="showPhoneSwitch"
+                                           @bind="settings.ShowPhoneNumber" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label class="setting-label">Show University Affiliation</label>
+                                <span class="setting-hint">Display your campus badge (e.g. University of Ghana) next to your name and services.</span>
+                            </div>
+                            <div class="setting-control">
+                                <div class="form-check form-switch fs-5">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="shareUniSwitch"
+                                           @bind="settings.ShareUniversityAffiliation" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="privacy-links mt-4 pt-3 border-top">
+                            <h5 class="fw-semibold mb-2 fs-6">Legal & Policy References</h5>
+                            <div class="d-flex flex-wrap gap-3">
+                                <a href="privacy-policy" class="policy-link">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Privacy Policy
+                                </a>
+                                <a href="terms-of-services" class="policy-link">
+                                    <i class="bi bi-journal-check me-1"></i>Terms of Service
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (activeTab == "app")
+                {
+                    <div class="settings-card">
+                        <div class="card-header-clean">
+                            <h3 class="section-title"><i class="bi bi-info-circle me-2 text-primary"></i>Application & System Information</h3>
+                            <p class="section-description">View software specifications, connectivity health, and manage local storage cache.</p>
+                        </div>
+
+                        <div class="info-grid mb-4">
+                            <div class="info-tile">
+                                <span class="info-label">Application</span>
+                                <span class="info-value">Student Job Hub</span>
+                            </div>
+                            <div class="info-tile">
+                                <span class="info-label">Version</span>
+                                <span class="info-value">1.0.0 (DCIT318 Group Project)</span>
+                            </div>
+                            <div class="info-tile">
+                                <span class="info-label">Framework</span>
+                                <span class="info-value">.NET 10.0 (Blazor WebAssembly)</span>
+                            </div>
+                            <div class="info-tile">
+                                <span class="info-label">System Health</span>
+                                <span class="info-value text-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Operational
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="setting-item border-top pt-3">
+                            <div class="setting-info">
+                                <label class="setting-label">Clear Local Cache & Storage</label>
+                                <span class="setting-hint">Remove cached preferences and reset application state in your browser.</span>
+                            </div>
+                            <div class="setting-control">
+                                <button type="button" class="btn btn-outline-danger btn-sm" @onclick="ClearCacheAsync">
+                                    <i class="bi bi-trash3 me-1"></i>Clear Storage Cache
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="team-credit mt-4 pt-3 border-top">
+                            <p class="text-muted small mb-0">
+                                <strong>Student Job Hub</strong> &bull; Department of Computer Science &bull; University of Ghana
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .settings-container {
+        max-width: 1050px;
+        margin: 0 auto;
+        padding: 24px 16px;
+    }
+
+    .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .settings-header {
+        border-color: #334155;
+    }
+
+    .settings-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    body.dark-mode .settings-title {
+        color: #f8fafc;
+    }
+
+    .settings-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    body.dark-mode .settings-subtitle {
+        color: #94a3b8;
+    }
+
+    .settings-header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 24px;
+    }
+
+    .settings-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .nav-tab {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        background: transparent;
+        border: 1px solid transparent;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .nav-tab:hover {
+        background-color: #f1f5f9;
+        color: #2563eb;
+    }
+
+    body.dark-mode .nav-tab {
+        color: #cbd5e1;
+    }
+
+    body.dark-mode .nav-tab:hover {
+        background-color: #1e293b;
+        color: #60a5fa;
+    }
+
+    .nav-tab.active {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-left: 3px solid #2563eb;
+    }
+
+    body.dark-mode .nav-tab.active {
+        background-color: #1e293b;
+        color: #60a5fa;
+        border-left: 3px solid #60a5fa;
+    }
+
+    .settings-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    body.dark-mode .settings-card {
+        background: #1e293b;
+        border-color: #334155;
+        box-shadow: none;
+    }
+
+    .card-header-clean {
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    body.dark-mode .card-header-clean {
+        border-color: #334155;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #0f172a;
+    }
+
+    body.dark-mode .section-title {
+        color: #f8fafc;
+    }
+
+    .section-description {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    body.dark-mode .section-description {
+        color: #94a3b8;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #f1f5f9;
+        gap: 16px;
+    }
+
+    body.dark-mode .setting-item {
+        border-color: #334155;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .setting-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+
+    body.dark-mode .setting-label {
+        color: #f1f5f9;
+    }
+
+    .setting-hint {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    body.dark-mode .setting-hint {
+        color: #94a3b8;
+    }
+
+    .setting-select {
+        min-width: 220px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 14px;
+    }
+
+    .info-tile {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    body.dark-mode .info-tile {
+        background-color: #0f172a;
+        border-color: #334155;
+    }
+
+    .info-label {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    body.dark-mode .info-label {
+        color: #94a3b8;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    body.dark-mode .info-value {
+        color: #f8fafc;
+    }
+
+    .policy-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        background-color: #eff6ff;
+        border: 1px solid #dbeafe;
+        transition: all 0.2s ease;
+    }
+
+    .policy-link:hover {
+        background-color: #dbeafe;
+    }
+
+    body.dark-mode .policy-link {
+        color: #93c5fd;
+        background-color: #1e293b;
+        border-color: #3b82f6;
+    }
+
+    body.dark-mode .policy-link:hover {
+        background-color: #2563eb;
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .settings-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .settings-nav {
+            flex-direction: row;
+            overflow-x: auto;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        body.dark-mode .settings-nav {
+            border-color: #334155;
+        }
+
+        .nav-tab {
+            white-space: nowrap;
+            border-left: none;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            border-left: none;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        body.dark-mode .nav-tab.active {
+            border-left: none;
+            border-bottom: 2px solid #60a5fa;
+        }
+    }
+</style>
+
+@code {
+    private UserSettingsModel settings = new();
+    private string activeTab = "preferences";
+    private bool isLoading = true;
+    private bool isSaving = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += OnThemeChangedHandler;
+        await LoadSettingsAsync();
+    }
+
+    private async Task LoadSettingsAsync()
+    {
+        isLoading = true;
+        try
+        {
+            settings = await SettingsService.GetSettingsAsync();
+        }
+        catch (Exception)
+        {
+            settings = new UserSettingsModel();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    private void OnThemeToggleChanged(ChangeEventArgs e)
+    {
+        if (e.Value is bool isDark)
+        {
+            settings.IsDarkMode = isDark;
+            _ = ThemeService.ToggleThemeAsync();
+        }
+    }
+
+    private void OnThemeChangedHandler()
+    {
+        settings.IsDarkMode = ThemeService.IsDarkMode;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SaveSettingsAsync()
+    {
+        isSaving = true;
+        try
+        {
+            await SettingsService.SaveSettingsAsync(settings);
+            ToastService.ShowSuccess("Settings saved successfully!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Failed to save settings: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ResetDefaultsAsync()
+    {
+        isSaving = true;
+        try
+        {
+            settings = await SettingsService.ResetToDefaultsAsync();
+            ToastService.ShowInfo("Settings reset to defaults.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Failed to reset settings: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ClearCacheAsync()
+    {
+        try
+        {
+            await SettingsService.ClearAppCacheAsync();
+            settings = await SettingsService.GetSettingsAsync();
+            ToastService.ShowWarning("Application local storage cache cleared.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error clearing cache: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= OnThemeChangedHandler;
+    }
+}
