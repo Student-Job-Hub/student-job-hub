@@ -31,7 +31,8 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = result.Message,
-            token = result.Token
+            token = result.Token,
+            refreshToken = result.RefreshToken
         });
     }
 
@@ -51,7 +52,29 @@ public class AuthController : ControllerBase
         return Ok(new
         {
             message = result.Message,
-            token = result.Token
+            token = result.Token,
+            refreshToken = result.RefreshToken
+        });
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshTokenDto dto)
+    {
+        var result = await _authService.RefreshAsync(dto.RefreshToken);
+
+        if (!result.Success)
+        {
+            return Unauthorized(new
+            {
+                message = result.Message
+            });
+        }
+
+        return Ok(new
+        {
+            message = result.Message,
+            token = result.Token,
+            refreshToken = result.RefreshToken
         });
     }
 }

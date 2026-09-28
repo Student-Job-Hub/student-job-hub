@@ -21,7 +21,7 @@
   }
   ```
 - **Responses:**
-  - `200 OK`: `{ "message": "Registration successful.", "token": "eyJhbG..." }`
+  - `200 OK`: `{ "message": "Registration successful.", "token": "eyJhbG...", "refreshToken": "..." }`
   - `400 Bad Request`: `{ "message": "Invalid role selected." }`
 
 ### `POST /api/auth/login`
@@ -35,8 +35,17 @@
   }
   ```
 - **Responses:**
-  - `200 OK`: `{ "message": "Login successful.", "token": "eyJhbG..." }`
+  - `200 OK`: `{ "message": "Login successful.", "token": "eyJhbG...", "refreshToken": "..." }`
   - `401 Unauthorized`: `{ "message": "Invalid email or password." }`
+
+### `POST /api/auth/refresh`
+
+- **Auth:** Public
+- **Request Body:** `{ "refreshToken": "..." }`
+- **Responses:**
+  - `200 OK`: Returns a new access token and rotated refresh token.
+  - `401 Unauthorized`: Refresh token is invalid, expired, or already used.
+- Refresh tokens expire after 30 days and can only be used once.
 
 ---
 
