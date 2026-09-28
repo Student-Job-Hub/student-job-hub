@@ -313,6 +313,56 @@ public class ApiBehaviorTests
         Assert.False(result.Success);
         Assert.Equal("You cannot review yourself.", result.Message);
     }
+
+    [Fact]
+    public async Task ReviewService_CreateAndRetrieve_Succeeds()
+    {
+        var (context, _, _, _, _, _, _, reviewService) = await CreateServicesAsync();
+
+        var reviewer = new ApplicationUser { Id = "rev1", FullName = "Reviewer Person", Email = "rev1@test.com" };
+        var reviewee = new ApplicationUser { Id = "target1", FullName = "Service Provider", Email = "target1@test.com" };
+        context.Users.AddRange(reviewer, reviewee);
+        await context.SaveChangesAsync();
+
+        // 1. Create valid review
+        var result = await reviewService.CreateAsync(new CreateReviewDto
+        {
+            RevieweeId = reviewee.Id,
+            Rating = 5,
+            Comment = "Excellent web development service, highly recommended!"
+        }, reviewer.Id);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Review);
+        Assert.Equal(5, result.Review!.Rating);
+        Assert.Equal("Reviewer Person", result.Review.ReviewerName);
+
+        // 2. Prevent duplicate review
+        var dupResult = await reviewService.CreateAsync(new CreateReviewDto
+        {
+            RevieweeId = reviewee.Id,
+            Rating = 4,
+            Comment = "Duplicate review attempt"
+        }, reviewer.Id);
+
+        Assert.False(dupResult.Success);
+        Assert.Equal("You have already reviewed this user.", dupResult.Message);
+
+        // 3. Get user reviews
+        var userReviews = await reviewService.GetUserReviewsAsync(reviewee.Id);
+        Assert.Single(userReviews);
+        Assert.Equal("Excellent web development service, highly recommended!", userReviews[0].Comment);
+
+        // 4. Delete review authorization check
+        var nonAuthorDelete = await reviewService.DeleteAsync(result.Review.Id, "intruder_id");
+        Assert.False(nonAuthorDelete);
+
+        var authorDelete = await reviewService.DeleteAsync(result.Review.Id, reviewer.Id);
+        Assert.True(authorDelete);
+
+        var afterDeleteReviews = await reviewService.GetUserReviewsAsync(reviewee.Id);
+        Assert.Empty(afterDeleteReviews);
+    }
 }
 
 // ============================================================

@@ -1,0 +1,714 @@
+@namespace StudentJobHub.Client.Components
+@using StudentJobHub.Client.Models
+@using StudentJobHub.Client.Services
+@inject ReviewApiService ReviewApiService
+@inject AuthService AuthService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+<div class="review-section-wrapper">
+    <div class="review-section-header">
+        <div class="header-left">
+            <h3 class="section-title">
+                <i class="bi bi-star-fill text-warning me-2"></i>Reviews & Ratings
+            </h3>
+            @if (!string.IsNullOrEmpty(TargetUserName))
+            {
+                <p class="section-subtitle">Feedback for <strong>@TargetUserName</strong> @(!string.IsNullOrEmpty(ContextTitle) ? $"({ContextTitle})" : "")</p>
+            }
+        </div>
+
+        @if (CanLeaveReview)
+        {
+            <button type="button" class="btn btn-primary btn-sm review-cta-btn" @onclick="OpenReviewModal">
+                <i class="bi bi-pencil-square me-1"></i>Write a Review
+            </button>
+        }
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="review-loading">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <span class="ms-2">Loading reviews...</span>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    else
+    {
+        <!-- Rating Summary Card -->
+        <div class="rating-summary-card">
+            <div class="summary-score-box">
+                <div class="big-score">@(summary.AverageRating > 0 ? summary.AverageRating.ToString("0.0") : "0.0")</div>
+                <StarRating Rating="summary.AverageRating" IsReadOnly="true" Size="md" ShowScore="false" ShowCount="false" />
+                <div class="total-reviews-count">@summary.TotalReviews @(summary.TotalReviews == 1 ? "review" : "reviews")</div>
+            </div>
+
+            <div class="summary-breakdown">
+                @for (int stars = 5; stars >= 1; stars--)
+                {
+                    var count = GetStarCount(stars);
+                    var percentage = summary.TotalReviews > 0 ? (count * 100.0 / summary.TotalReviews) : 0;
+
+                    <div class="breakdown-row">
+                        <span class="star-label">@stars <i class="bi bi-star-fill text-warning"></i></span>
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" style="width: @percentage%"></div>
+                        </div>
+                        <span class="count-label">@count</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Review Action Bar if not logged in or is self -->
+        @if (!AuthService.IsLoggedIn)
+        {
+            <div class="login-prompt-bar">
+                <span>Want to leave a review?</span>
+                <a href="/login?returnUrl=@Navigation.Uri" class="btn btn-outline-primary btn-sm">Log In</a>
+            </div>
+        }
+        else if (isSelf)
+        {
+            <div class="self-note">
+                <i class="bi bi-info-circle me-1"></i> You cannot review your own profile or postings.
+            </div>
+        }
+        else if (hasAlreadyReviewed)
+        {
+            <div class="reviewed-badge">
+                <i class="bi bi-check-circle-fill text-success me-1"></i> You have already reviewed this user.
+            </div>
+        }
+
+        <!-- Reviews List -->
+        @if (reviews.Count == 0)
+        {
+            <div class="empty-reviews">
+                <i class="bi bi-chat-square-heart empty-icon"></i>
+                <h5>No reviews yet</h5>
+                <p>Be the first to share feedback and rate your experience!</p>
+            </div>
+        }
+        else
+        {
+            <div class="reviews-feed">
+                @foreach (var review in reviews)
+                {
+                    <div class="review-item-card">
+                        <div class="review-item-header">
+                            <div class="reviewer-meta">
+                                <div class="reviewer-avatar">@GetInitials(review.ReviewerName)</div>
+                                <div>
+                                    <div class="reviewer-name">@review.ReviewerName</div>
+                                    <div class="review-date">@review.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                </div>
+                            </div>
+
+                            <div class="review-header-right">
+                                <StarRating Rating="review.Rating" IsReadOnly="true" Size="sm" ShowScore="true" ShowCount="false" />
+                                
+                                @if (AuthService.IsLoggedIn && review.ReviewerId == currentUserId)
+                                {
+                                    <button type="button" class="btn btn-outline-danger btn-xs ms-2 delete-review-btn" 
+                                            @onclick="() => DeleteReviewAsync(review.Id)"
+                                            title="Delete your review">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="review-body">
+                            <p class="review-comment">@review.Comment</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<!-- Write Review Modal -->
+@if (showReviewModal)
+{
+    <div class="modal-backdrop-custom" @onclick="CloseReviewModal">
+        <div class="modal-dialog-custom" @onclick:stopPropagation="true">
+            <div class="modal-header-custom">
+                <h4 class="modal-title">
+                    <i class="bi bi-star-half text-warning me-2"></i>Rate & Review @TargetUserName
+                </h4>
+                <button type="button" class="btn-close-custom" @onclick="CloseReviewModal">&times;</button>
+            </div>
+
+            <EditForm Model="@newReview" OnValidSubmit="SubmitReviewAsync">
+                <DataAnnotationsValidator />
+
+                <div class="modal-body-custom">
+                    @if (!string.IsNullOrEmpty(submissionError))
+                    {
+                        <div class="alert alert-danger mb-3">@submissionError</div>
+                    }
+
+                    <div class="form-group mb-3 text-center">
+                        <label class="form-label d-block fw-semibold mb-2">Your Rating</label>
+                        <StarRating Rating="@newReview.Rating" 
+                                    RatingChanged="@(r => newReview.Rating = r)" 
+                                    IsReadOnly="false" 
+                                    Size="lg" 
+                                    ShowScore="true" 
+                                    ShowCount="false" />
+                        <ValidationMessage For="@(() => newReview.Rating)" class="text-danger small mt-1" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold" for="reviewComment">Your Feedback & Comments</label>
+                        <InputTextArea id="reviewComment" 
+                                       class="form-control" 
+                                       rows="4" 
+                                       placeholder="Share details about your collaboration, work quality, responsiveness, or campus service..."
+                                       @bind-Value="newReview.Comment" />
+                        <ValidationMessage For="@(() => newReview.Comment)" class="text-danger small" />
+                    </div>
+                </div>
+
+                <div class="modal-footer-custom">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseReviewModal" disabled="@isSubmitting">Cancel</button>
+                    <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                        <i class="bi bi-send me-1"></i>@(isSubmitting ? "Submitting..." : "Post Review")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<style>
+    .review-section-wrapper {
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .review-section-wrapper {
+        border-color: #334155;
+    }
+
+    .review-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0;
+        color: #0f172a;
+    }
+
+    body.dark-mode .section-title {
+        color: #f8fafc;
+    }
+
+    .section-subtitle {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin: 2px 0 0 0;
+    }
+
+    body.dark-mode .section-subtitle {
+        color: #94a3b8;
+    }
+
+    .rating-summary-card {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 24px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    body.dark-mode .rating-summary-card {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+
+    .summary-score-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-right: 1px solid #e2e8f0;
+        padding-right: 16px;
+    }
+
+    body.dark-mode .summary-score-box {
+        border-color: #334155;
+    }
+
+    .big-score {
+        font-size: 2.75rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    body.dark-mode .big-score {
+        color: #f8fafc;
+    }
+
+    .total-reviews-count {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-top: 6px;
+    }
+
+    body.dark-mode .total-reviews-count {
+        color: #94a3b8;
+    }
+
+    .summary-breakdown {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .breakdown-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+    }
+
+    .star-label {
+        width: 38px;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    body.dark-mode .star-label {
+        color: #cbd5e1;
+    }
+
+    .progress-bar-track {
+        flex: 1;
+        height: 8px;
+        background-color: #e2e8f0;
+        overflow: hidden;
+    }
+
+    body.dark-mode .progress-bar-track {
+        background-color: #334155;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background-color: #f59e0b;
+        transition: width 0.4s ease;
+    }
+
+    .count-label {
+        width: 28px;
+        text-align: right;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    body.dark-mode .count-label {
+        color: #94a3b8;
+    }
+
+    .login-prompt-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #eff6ff;
+        border: 1px solid #dbeafe;
+        padding: 10px 16px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    body.dark-mode .login-prompt-bar {
+        background-color: #1e293b;
+        border-color: #3b82f6;
+        color: #93c5fd;
+    }
+
+    .self-note, .reviewed-badge {
+        padding: 8px 14px;
+        font-size: 0.88rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+        color: #475569;
+    }
+
+    body.dark-mode .self-note, body.dark-mode .reviewed-badge {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+
+    .empty-reviews {
+        text-align: center;
+        padding: 36px 16px;
+        background-color: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        color: #64748b;
+    }
+
+    body.dark-mode .empty-reviews {
+        background-color: #0f172a;
+        border-color: #334155;
+        color: #94a3b8;
+    }
+
+    .empty-icon {
+        font-size: 2.2rem;
+        color: #94a3b8;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .reviews-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .review-item-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 16px 20px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    body.dark-mode .review-item-card {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+
+    .review-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .reviewer-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .reviewer-avatar {
+        width: 38px;
+        height: 38px;
+        background-color: #2563eb;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .reviewer-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #0f172a;
+    }
+
+    body.dark-mode .reviewer-name {
+        color: #f8fafc;
+    }
+
+    .review-date {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    body.dark-mode .review-date {
+        color: #94a3b8;
+    }
+
+    .review-header-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .review-comment {
+        color: #334155;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    body.dark-mode .review-comment {
+        color: #cbd5e1;
+    }
+
+    .btn-xs {
+        padding: 2px 6px;
+        font-size: 0.75rem;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop-custom {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+        padding: 16px;
+    }
+
+    .modal-dialog-custom {
+        background: #ffffff;
+        width: 100%;
+        max-width: 520px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .modal-dialog-custom {
+        background: #1e293b;
+        border-color: #334155;
+        color: #f8fafc;
+    }
+
+    .modal-header-custom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .modal-header-custom {
+        border-color: #334155;
+    }
+
+    .modal-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .btn-close-custom {
+        background: transparent;
+        border: none;
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        color: #64748b;
+    }
+
+    body.dark-mode .btn-close-custom {
+        color: #cbd5e1;
+    }
+
+    .modal-body-custom {
+        padding: 20px;
+    }
+
+    .modal-footer-custom {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .modal-footer-custom {
+        border-color: #334155;
+    }
+
+    @@media (max-width: 600px) {
+        .rating-summary-card {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-score-box {
+            border-right: none;
+            border-bottom: 1px solid #e2e8f0;
+            padding-right: 0;
+            padding-bottom: 16px;
+        }
+
+        body.dark-mode .summary-score-box {
+            border-color: #334155;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string TargetUserId { get; set; } = string.Empty;
+
+    [Parameter]
+    public string TargetUserName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ContextTitle { get; set; } = string.Empty;
+
+    private List<ReviewModel> reviews = new();
+    private ReviewSummaryModel summary = new();
+    private CreateReviewModel newReview = new();
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private bool showReviewModal = false;
+    private string? errorMessage;
+    private string? submissionError;
+    private string? currentUserId;
+
+    private bool isSelf => !string.IsNullOrEmpty(currentUserId) && currentUserId == TargetUserId;
+    private bool hasAlreadyReviewed => !string.IsNullOrEmpty(currentUserId) && reviews.Any(r => r.ReviewerId == currentUserId);
+    private bool CanLeaveReview => AuthService.IsLoggedIn && !isSelf && !hasAlreadyReviewed && !string.IsNullOrEmpty(TargetUserId);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        currentUserId = AuthService.User?.Id;
+        if (!string.IsNullOrWhiteSpace(TargetUserId))
+        {
+            await LoadReviewsAsync();
+        }
+    }
+
+    public async Task LoadReviewsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            reviews = await ReviewApiService.GetUserReviewsAsync(TargetUserId);
+            summary = ReviewSummaryModel.FromReviews(reviews);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unable to load reviews: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private int GetStarCount(int stars)
+    {
+        return stars switch
+        {
+            5 => summary.Star5Count,
+            4 => summary.Star4Count,
+            3 => summary.Star3Count,
+            2 => summary.Star2Count,
+            1 => summary.Star1Count,
+            _ => 0
+        };
+    }
+
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2) return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
+        return name.Length >= 2 ? name.Substring(0, 2).ToUpper() : name.ToUpper();
+    }
+
+    private void OpenReviewModal()
+    {
+        newReview = new CreateReviewModel
+        {
+            RevieweeId = TargetUserId,
+            Rating = 5,
+            Comment = ""
+        };
+        submissionError = null;
+        showReviewModal = true;
+    }
+
+    private void CloseReviewModal()
+    {
+        showReviewModal = false;
+        submissionError = null;
+    }
+
+    private async Task SubmitReviewAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newReview.Comment))
+        {
+            submissionError = "Please enter a comment.";
+            return;
+        }
+
+        isSubmitting = true;
+        submissionError = null;
+        newReview.RevieweeId = TargetUserId;
+
+        try
+        {
+            var response = await ReviewApiService.CreateAsync(newReview);
+            if (response.IsSuccessStatusCode)
+            {
+                ToastService.ShowSuccess("Review submitted successfully!");
+                CloseReviewModal();
+                await LoadReviewsAsync();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                submissionError = !string.IsNullOrWhiteSpace(body) ? body : "Failed to submit review.";
+                ToastService.ShowError(submissionError);
+            }
+        }
+        catch (Exception ex)
+        {
+            submissionError = $"Error: {ex.Message}";
+            ToastService.ShowError(submissionError);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task DeleteReviewAsync(int reviewId)
+    {
+        try
+        {
+            var response = await ReviewApiService.DeleteAsync(reviewId);
+            if (response.IsSuccessStatusCode)
+            {
+                ToastService.ShowInfo("Your review has been removed.");
+                await LoadReviewsAsync();
+            }
+            else
+            {
+                ToastService.ShowError("Could not delete review.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Error deleting review: {ex.Message}");
+        }
+    }
+}

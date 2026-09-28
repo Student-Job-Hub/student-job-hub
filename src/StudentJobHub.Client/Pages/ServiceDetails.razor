@@ -48,6 +48,12 @@
             <div class="contact">
                 <button class="btn btn-success" @onclick="OpenContactModal">Contact Provider</button>
             </div>
+
+            <!-- Provider Reviews & Ratings Section -->
+            @if (!string.IsNullOrEmpty(service.ProviderId))
+            {
+                <ReviewSection TargetUserId="@service.ProviderId" TargetUserName="@service.ProviderName" ContextTitle="Service Provider" />
+            }
         </div>
     }
 </div>
