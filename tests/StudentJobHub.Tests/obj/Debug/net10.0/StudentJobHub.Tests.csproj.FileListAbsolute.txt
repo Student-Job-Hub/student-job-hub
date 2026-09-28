@@ -25,6 +25,7 @@ C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.Data.SqlClient.dll
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.InMemory.dll
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.SqlServer.dll
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.Identity.Client.dll
@@ -158,4 +159,3 @@ C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\obj\Debug\net10.
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\obj\Debug\net10.0\StudentJobHub.Tests.pdb
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\obj\Debug\net10.0\StudentJobHub.Tests.genruntimeconfig.cache
 C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\obj\Debug\net10.0\ref\StudentJobHub.Tests.dll
-C:\Users\USER\Downloads\StudentJobHub\tests\StudentJobHub.Tests\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.InMemory.dll
