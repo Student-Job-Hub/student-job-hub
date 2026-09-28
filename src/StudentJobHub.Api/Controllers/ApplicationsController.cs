@@ -21,7 +21,7 @@ public class ApplicationsController : ControllerBase
 
     // ==========================================
     // APPLY TO A JOB (with optional resume)
-    // ==========================================
+    // =========================================
 
     [HttpPost("{jobId:int}")]
     [RequestSizeLimit(ResumeFileRules.MaxSizeBytes + 512 * 1024)]
