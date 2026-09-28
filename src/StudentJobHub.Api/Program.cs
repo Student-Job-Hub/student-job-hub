@@ -43,6 +43,21 @@ builder.Services
     })
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    context.HttpContext.Request.Path.StartsWithSegments("/hubs/messages"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -174,5 +189,8 @@ app.MapControllers();
 
 app.MapHub<StudentJobHub.Api.Hubs.NotificationHub>(
     "/hubs/notifications");
+
+app.MapHub<StudentJobHub.Api.Hubs.DirectMessageHub>(
+    "/hubs/messages");
 
 app.Run();
