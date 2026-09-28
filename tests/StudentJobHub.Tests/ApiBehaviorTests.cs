@@ -140,6 +140,75 @@ public class ApiBehaviorTests
     }
 
     [Fact]
+    public async Task SuspendedUser_CannotLoginOrRefreshUntilReactivated()
+    {
+        var (context, userManager, authService, _, _, _, _, _) = await CreateServicesAsync();
+        var registration = await authService.RegisterAsync(new RegisterDto
+        {
+            FullName = "Member User",
+            Email = "suspended@test.com",
+            Password = "Password123!",
+            Role = "Student"
+        });
+        var user = await userManager.FindByEmailAsync("suspended@test.com");
+        Assert.NotNull(user);
+
+        var adminService = new AdminService(context, userManager);
+        Assert.True(await adminService.SetUserSuspensionAsync(user!.Id, true));
+
+        var login = await authService.LoginAsync(new LoginDto
+        {
+            Email = "suspended@test.com",
+            Password = "Password123!"
+        });
+        var refresh = await authService.RefreshAsync(registration.RefreshToken!);
+
+        Assert.False(login.Success);
+        Assert.False(refresh.Success);
+
+        Assert.True(await adminService.SetUserSuspensionAsync(user.Id, false));
+        var reactivatedLogin = await authService.LoginAsync(new LoginDto
+        {
+            Email = "suspended@test.com",
+            Password = "Password123!"
+        });
+        Assert.True(reactivatedLogin.Success);
+    }
+
+    [Fact]
+    public async Task AdminModeration_ClosesJobsAndRemovesServices()
+    {
+        var (context, userManager, _, _, _, _, _, _) = await CreateServicesAsync();
+        var owner = new ApplicationUser
+        {
+            Id = "moderation-owner",
+            UserName = "owner@test.com",
+            Email = "owner@test.com",
+            FullName = "Listing Owner"
+        };
+        context.Users.Add(owner);
+        var job = new Job
+        {
+            Title = "Moderated job",
+            PostedById = owner.Id
+        };
+        var service = new StudentJobHub.Api.Models.Service
+        {
+            Title = "Moderated service",
+            ProviderId = owner.Id
+        };
+        context.Jobs.Add(job);
+        context.Services.Add(service);
+        await context.SaveChangesAsync();
+
+        var adminService = new AdminService(context, userManager);
+        Assert.True(await adminService.CloseJobAsync(job.Id));
+        Assert.True(await adminService.DeleteServiceAsync(service.Id));
+        Assert.False((await context.Jobs.FindAsync(job.Id))!.IsOpen);
+        Assert.Null(await context.Services.FindAsync(service.Id));
+    }
+
+    [Fact]
     public async Task RefreshAsync_RotatesTokenAndRejectsPreviousToken()
     {
         var (_, _, authService, _, _, _, _, _) = await CreateServicesAsync();

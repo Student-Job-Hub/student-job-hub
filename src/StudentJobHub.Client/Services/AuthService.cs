@@ -23,6 +23,51 @@ public class AuthService
 
     public bool IsLoggedIn => !string.IsNullOrWhiteSpace(Token);
 
+    public bool HasRole(string role)
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var payload = Token.Split('.')[1]
+                .Replace('-', '+')
+                .Replace('_', '/');
+            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+
+            using var document = JsonDocument.Parse(Convert.FromBase64String(payload));
+            foreach (var claim in document.RootElement.EnumerateObject())
+            {
+                if (claim.Name != "role" && claim.Name != "roles" &&
+                    !claim.Name.EndsWith("/role", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (claim.Value.ValueKind == JsonValueKind.String &&
+                    string.Equals(claim.Value.GetString(), role, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (claim.Value.ValueKind == JsonValueKind.Array &&
+                    claim.Value.EnumerateArray().Any(value =>
+                        string.Equals(value.GetString(), role, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
     public event Action? OnAuthStateChanged;
 
     public async Task InitializeAsync()
