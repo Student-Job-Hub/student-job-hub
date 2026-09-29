@@ -2,7 +2,10 @@
 @using StudentJobHub.Client.Models
 @using StudentJobHub.Client.Services
 @inject JobApiService JobService
+@inject BookmarkApiService BookmarkService
+@inject AuthService AuthService
 @inject ToastService ToastService
+@inject NavigationManager Navigation
 
 <PageTitle>Jobs | Student Job Hub</PageTitle>
 
@@ -17,9 +20,17 @@
             </p>
         </div>
 
-        <a href="/post-job" class="create-job-button">
-            + Post a Job
-        </a>
+        <div style="display:flex; gap:12px; align-items:center;">
+            @if (AuthService.IsLoggedIn)
+            {
+                <a href="/saved-jobs" class="saved-jobs-link">
+                    <i class="bi bi-bookmark-fill"></i> Saved Jobs (@bookmarkedJobIds.Count)
+                </a>
+            }
+            <a href="/post-job" class="create-job-button">
+                + Post a Job
+            </a>
+        </div>
     </div>
 
     @if (isLoading)
@@ -94,10 +105,8 @@
 
                     <div class="job-card-header">
                         <div class="job-icon"><i class="bi bi-bag"></i></div>
-                            
-                    
 
-                        <div style="display:flex; gap:6px; align-items:center;">
+                        <div style="display:flex; gap:8px; align-items:center;">
                             @if (!string.IsNullOrWhiteSpace(job.Category))
                             {
                                 <span class="status" style="background: #32a7f3ff; color: black; font-weight: 700;">
@@ -116,6 +125,13 @@
                                     Closed
                                 </span>
                             }
+
+                            <button class="bookmark-btn" 
+                                    title="@(IsBookmarked(job.Id) ? "Remove Bookmark" : "Save Job")" 
+                                    @onclick="() => ToggleBookmarkAsync(job.Id)"
+                                    @onclick:stopPropagation="true">
+                                <i class="bi @(IsBookmarked(job.Id) ? "bi-bookmark-fill text-primary" : "bi-bookmark")" style="font-size: 1.25rem;"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -469,11 +485,47 @@
 
     }
 
+    .saved-jobs-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f1f5f9;
+        color: #1e293b;
+        border: 1px solid #cbd5e1;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.92rem;
+        transition: all 0.2s ease;
+    }
+
+    .saved-jobs-link:hover {
+        background: #e2e8f0;
+        color: #2563eb;
+    }
+
+    .bookmark-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease;
+    }
+
+    .bookmark-btn:hover {
+        transform: scale(1.2);
+    }
+
 </style>
 
 @code {
 
     private List<JobModel> jobs = new();
+    private HashSet<int> bookmarkedJobIds = new();
 
     private bool isLoading = true;
 
@@ -531,6 +583,19 @@
         try
         {
             jobs = await JobService.GetAllAsync();
+
+            if (AuthService.IsLoggedIn)
+            {
+                try
+                {
+                    var ids = await BookmarkService.GetBookmarkIdsAsync();
+                    bookmarkedJobIds = new HashSet<int>(ids);
+                }
+                catch
+                {
+                    bookmarkedJobIds = new HashSet<int>();
+                }
+            }
         }
         catch
         {
@@ -540,6 +605,64 @@
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private bool IsBookmarked(int jobId) => bookmarkedJobIds.Contains(jobId);
+
+    private async Task ToggleBookmarkAsync(int jobId)
+    {
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo($"/login?returnUrl=/jobs");
+            return;
+        }
+
+        var isCurrentlyBookmarked = bookmarkedJobIds.Contains(jobId);
+
+        if (isCurrentlyBookmarked)
+        {
+            bookmarkedJobIds.Remove(jobId);
+            try
+            {
+                var res = await BookmarkService.RemoveBookmarkAsync(jobId);
+                if (res.IsSuccessStatusCode)
+                {
+                    ToastService.ShowSuccess("Removed from saved jobs.");
+                }
+                else
+                {
+                    bookmarkedJobIds.Add(jobId);
+                    ToastService.ShowError("Could not remove bookmark.");
+                }
+            }
+            catch
+            {
+                bookmarkedJobIds.Add(jobId);
+                ToastService.ShowError("Error updating bookmark.");
+            }
+        }
+        else
+        {
+            bookmarkedJobIds.Add(jobId);
+            try
+            {
+                var res = await BookmarkService.BookmarkJobAsync(jobId);
+                if (res.IsSuccessStatusCode)
+                {
+                    ToastService.ShowSuccess("Job saved to your bookmarks!");
+                }
+                else
+                {
+                    bookmarkedJobIds.Remove(jobId);
+                    ToastService.ShowError("Could not bookmark job.");
+                }
+            }
+            catch
+            {
+                bookmarkedJobIds.Remove(jobId);
+                ToastService.ShowError("Error bookmarking job.");
+            }
         }
     }
 }

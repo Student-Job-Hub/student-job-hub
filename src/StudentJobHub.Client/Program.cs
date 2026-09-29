@@ -68,6 +68,22 @@ builder.Services.AddScoped<AdminApiService>(sp =>
         sp.GetRequiredService<IHttpClientFactory>()
             .CreateClient("AuthorizedClient")));
 
+builder.Services.AddScoped<BookmarkApiService>(sp =>
+    new BookmarkApiService(
+        sp.GetRequiredService<IHttpClientFactory>()
+            .CreateClient("AuthorizedClient")));
+
+builder.Services.AddScoped<BookingApiService>(sp =>
+    new BookingApiService(
+        sp.GetRequiredService<IHttpClientFactory>()
+            .CreateClient("AuthorizedClient")));
+
+builder.Services.AddScoped<ExportApiService>(sp =>
+    new ExportApiService(
+        sp.GetRequiredService<IHttpClientFactory>()
+            .CreateClient("AuthorizedClient"),
+        sp.GetRequiredService<Microsoft.JSInterop.IJSRuntime>()));
+
 // UI Polish services
 builder.Services.AddScoped<ToastService>();
 builder.Services.AddScoped<ThemeService>();
