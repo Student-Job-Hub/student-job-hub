@@ -109,6 +109,7 @@ builder.Services.AddScoped<JobApplicationService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<AdminBootstrapService>();
 
 // ============================================================
 // CONTROLLERS
@@ -181,6 +182,15 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(
                 new IdentityRole(role));
         }
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        var adminBootstrap = scope.ServiceProvider
+            .GetRequiredService<AdminBootstrapService>();
+        await adminBootstrap.EnsureAdminAsync(
+            "eshunjeffrey12@gmail.com",
+            "Admin@123");
     }
 }
 

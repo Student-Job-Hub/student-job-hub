@@ -175,3 +175,5 @@ All endpoints require a JWT for a user in the `Admin` role.
 - `PATCH /api/admin/jobs/{jobId}/close`: Close an open job listing
 - `GET /api/admin/services`: List service listings and their providers
 - `DELETE /api/admin/services/{serviceId}`: Remove a service listing
+
+In Development, startup provisions a local administrator account without public registration. The development-only email and password are defined in `Program.cs`; this fixed credential must never be used in production or deployed environments.
