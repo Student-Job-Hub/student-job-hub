@@ -102,8 +102,8 @@
 <!-- Book Service Modal -->
 @if (showBookingModal)
 {
-    <div class="modal-overlay">
-        <div class="modal modal-lg">
+    <div class="modal-overlay" @onclick="CloseBookingModal">
+        <div class="service-modal service-modal-lg" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h2>Book Service: @service?.Title</h2>
                 <button class="modal-close" @onclick="CloseBookingModal">×</button>
@@ -190,8 +190,8 @@
 <!-- Contact Provider Modal -->
 @if (showContactModal)
 {
-    <div class="modal-overlay">
-        <div class="modal">
+    <div class="modal-overlay" @onclick="CloseContactModal">
+        <div class="service-modal" @onclick:stopPropagation="true">
             <div class="modal-header">
                 <h2>Contact @service?.ProviderName</h2>
                 <button class="modal-close" @onclick="CloseContactModal">×</button>
@@ -354,24 +354,34 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
-        backdrop-filter: blur(3px);
+        z-index: 9999;
+        backdrop-filter: blur(4px);
     }
 
-    .modal {
-        background: white;
+    .service-modal {
+        background: #ffffff;
+        color: #1e293b;
         padding: 24px;
         border-radius: 12px;
         width: 92%;
         max-width: 500px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+        display: block !important;
+        position: relative;
+        z-index: 10000;
     }
 
-    .modal-lg {
+    body.dark-mode .service-modal {
+        background: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+
+    .service-modal-lg {
         max-width: 620px;
     }
 
@@ -530,12 +540,16 @@
         }
     }
 
-    private void OpenBookingModal()
+    private async Task OpenBookingModal()
     {
         if (!AuthService.IsLoggedIn)
         {
-            NavigationManager.NavigateTo($"/login?returnUrl=/services/{Id}");
-            return;
+            await AuthService.InitializeAsync();
+            if (!AuthService.IsLoggedIn)
+            {
+                NavigationManager.NavigateTo($"/login?returnUrl=/services/{Id}");
+                return;
+            }
         }
 
         bookingModel = new CreateServiceBookingModel
@@ -549,12 +563,14 @@
         bookingErrorMessage = null;
         isBookingSuccess = false;
         showBookingModal = true;
+        StateHasChanged();
     }
 
     private void CloseBookingModal()
     {
         showBookingModal = false;
         bookingErrorMessage = null;
+        StateHasChanged();
     }
 
     private async Task SubmitBookingRequestAsync()
@@ -589,6 +605,7 @@
         finally
         {
             isSubmittingBooking = false;
+            StateHasChanged();
         }
     }
 
@@ -597,18 +614,23 @@
         NavigationManager.NavigateTo("/my-bookings");
     }
 
-    private void OpenContactModal()
+    private async Task OpenContactModal()
     {
         if (!AuthService.IsLoggedIn)
         {
-            NavigationManager.NavigateTo($"/login?returnUrl=/services/{Id}");
-            return;
+            await AuthService.InitializeAsync();
+            if (!AuthService.IsLoggedIn)
+            {
+                NavigationManager.NavigateTo($"/login?returnUrl=/services/{Id}");
+                return;
+            }
         }
 
         contactMessage = string.Empty;
         modalErrorMessage = null;
         isSuccessMessageVisible = false;
         showContactModal = true;
+        StateHasChanged();
     }
 
     private void CloseContactModal()
