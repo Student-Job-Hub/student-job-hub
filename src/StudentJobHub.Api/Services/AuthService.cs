@@ -79,6 +79,11 @@ public class AuthService
             return (false, "Invalid email or password.", null, null);
         }
 
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return (false, "This account is suspended.", null, null);
+        }
+
         var validPassword = await _userManager.CheckPasswordAsync(
             user,
             dto.Password);
@@ -105,7 +110,8 @@ public class AuthService
         var user = await _userManager.Users.FirstOrDefaultAsync(
             candidate => candidate.RefreshTokenHash == tokenHash);
 
-        if (user == null || user.RefreshTokenExpiresAt <= DateTime.UtcNow)
+        if (user == null || user.RefreshTokenExpiresAt <= DateTime.UtcNow ||
+            await _userManager.IsLockedOutAsync(user))
         {
             return (false, "Invalid or expired refresh token.", null, null);
         }

@@ -23,6 +23,123 @@ public class AuthService
 
     public bool IsLoggedIn => !string.IsNullOrWhiteSpace(Token);
 
+    public UserModel? User
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(Token))
+            {
+                return null;
+            }
+
+            try
+            {
+                var payload = Token.Split('.')[1]
+                    .Replace('-', '+')
+                    .Replace('_', '/');
+                payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+
+                using var document = JsonDocument.Parse(Convert.FromBase64String(payload));
+                var user = new UserModel();
+
+                foreach (var claim in document.RootElement.EnumerateObject())
+                {
+                    var name = claim.Name;
+                    if (name.Equals("sub", StringComparison.OrdinalIgnoreCase) ||
+                        name.Equals("nameid", StringComparison.OrdinalIgnoreCase) ||
+                        name.EndsWith("/nameidentifier", StringComparison.OrdinalIgnoreCase))
+                    {
+                        user.Id = claim.Value.GetString() ?? string.Empty;
+                    }
+                    else if (name.Equals("name", StringComparison.OrdinalIgnoreCase) ||
+                             name.EndsWith("/name", StringComparison.OrdinalIgnoreCase))
+                    {
+                        user.FullName = claim.Value.GetString() ?? string.Empty;
+                    }
+                    else if (name.Equals("email", StringComparison.OrdinalIgnoreCase) ||
+                             name.EndsWith("/emailaddress", StringComparison.OrdinalIgnoreCase))
+                    {
+                        user.Email = claim.Value.GetString() ?? string.Empty;
+                    }
+                    else if (name.Equals("mobilephone", StringComparison.OrdinalIgnoreCase) ||
+                             name.EndsWith("/mobilephone", StringComparison.OrdinalIgnoreCase))
+                    {
+                        user.PhoneNumber = claim.Value.GetString();
+                    }
+                    else if (name.Equals("role", StringComparison.OrdinalIgnoreCase) ||
+                             name.Equals("roles", StringComparison.OrdinalIgnoreCase) ||
+                             name.EndsWith("/role", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (claim.Value.ValueKind == JsonValueKind.String)
+                        {
+                            var roleStr = claim.Value.GetString();
+                            if (!string.IsNullOrEmpty(roleStr)) user.Roles.Add(roleStr);
+                        }
+                        else if (claim.Value.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var item in claim.Value.EnumerateArray())
+                            {
+                                var roleStr = item.GetString();
+                                if (!string.IsNullOrEmpty(roleStr)) user.Roles.Add(roleStr);
+                            }
+                        }
+                    }
+                }
+
+                return user;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+
+    public bool HasRole(string role)
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            return false;
+        }
+
+        try
+        {
+            var payload = Token.Split('.')[1]
+                .Replace('-', '+')
+                .Replace('_', '/');
+            payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+
+            using var document = JsonDocument.Parse(Convert.FromBase64String(payload));
+            foreach (var claim in document.RootElement.EnumerateObject())
+            {
+                if (claim.Name != "role" && claim.Name != "roles" &&
+                    !claim.Name.EndsWith("/role", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (claim.Value.ValueKind == JsonValueKind.String &&
+                    string.Equals(claim.Value.GetString(), role, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (claim.Value.ValueKind == JsonValueKind.Array &&
+                    claim.Value.EnumerateArray().Any(value =>
+                        string.Equals(value.GetString(), role, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
     public event Action? OnAuthStateChanged;
 
     public async Task InitializeAsync()

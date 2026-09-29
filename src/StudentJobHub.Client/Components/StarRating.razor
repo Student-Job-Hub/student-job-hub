@@ -1,0 +1,167 @@
+@namespace StudentJobHub.Client.Components
+
+<div class="star-rating @(IsReadOnly ? "readonly" : "interactive") star-rating-@Size" @onmouseleave="HandleMouseLeave">
+    <div class="stars-container">
+        @for (int i = 1; i <= MaxRating; i++)
+        {
+            var starIndex = i;
+            var isFilled = DisplayRating >= starIndex;
+            var isHalf = !isFilled && (DisplayRating >= starIndex - 0.5);
+
+            <button type="button"
+                    class="star-btn @(isFilled ? "filled" : isHalf ? "half-filled" : "empty")"
+                    disabled="@IsReadOnly"
+                    @onclick="() => SetRating(starIndex)"
+                    @onmouseenter="() => HandleMouseEnter(starIndex)"
+                    title="@($"{starIndex} of {MaxRating} stars")">
+                <i class="bi @(isFilled ? "bi-star-fill" : isHalf ? "bi-star-half" : "bi-star")"></i>
+            </button>
+        }
+    </div>
+
+    @if (ShowScore && DisplayRating > 0)
+    {
+        <span class="rating-score">@DisplayRating.ToString("0.0")</span>
+    }
+
+    @if (ShowCount && TotalReviews > 0)
+    {
+        <span class="rating-count">(@TotalReviews @(TotalReviews == 1 ? "review" : "reviews"))</span>
+    }
+</div>
+
+<style>
+    .star-rating {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .stars-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .star-btn {
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: default;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .star-rating.interactive .star-btn {
+        cursor: pointer;
+    }
+
+    .star-rating.interactive .star-btn:hover {
+        transform: scale(1.2);
+    }
+
+    .star-btn.filled i,
+    .star-btn.half-filled i {
+        color: #f59e0b; /* Amber Gold */
+    }
+
+    .star-btn.empty i {
+        color: #cbd5e1; /* Slate muted */
+    }
+
+    body.dark-mode .star-btn.empty i {
+        color: #475569;
+    }
+
+    .rating-score {
+        font-weight: 700;
+        color: #0f172a;
+        margin-left: 2px;
+    }
+
+    body.dark-mode .rating-score {
+        color: #f8fafc;
+    }
+
+    .rating-count {
+        color: #64748b;
+        font-size: 0.85em;
+    }
+
+    body.dark-mode .rating-count {
+        color: #94a3b8;
+    }
+
+    /* Size variants */
+    .star-rating-sm .star-btn i { font-size: 0.85rem; }
+    .star-rating-sm .rating-score { font-size: 0.85rem; }
+    
+    .star-rating-md .star-btn i { font-size: 1.15rem; }
+    .star-rating-md .rating-score { font-size: 0.95rem; }
+    
+    .star-rating-lg .star-btn i { font-size: 1.6rem; }
+    .star-rating-lg .rating-score { font-size: 1.3rem; }
+</style>
+
+@code {
+    [Parameter]
+    public double Rating { get; set; } = 0;
+
+    [Parameter]
+    public EventCallback<int> RatingChanged { get; set; }
+
+    [Parameter]
+    public int TotalReviews { get; set; } = 0;
+
+    [Parameter]
+    public bool IsReadOnly { get; set; } = true;
+
+    [Parameter]
+    public int MaxRating { get; set; } = 5;
+
+    [Parameter]
+    public bool ShowScore { get; set; } = true;
+
+    [Parameter]
+    public bool ShowCount { get; set; } = true;
+
+    [Parameter]
+    public string Size { get; set; } = "md"; // sm, md, lg
+
+    private int hoveredRating = 0;
+
+    private double DisplayRating => !IsReadOnly && hoveredRating > 0 ? hoveredRating : Rating;
+
+    private void HandleMouseEnter(int rating)
+    {
+        if (!IsReadOnly)
+        {
+            hoveredRating = rating;
+        }
+    }
+
+    private void HandleMouseLeave()
+    {
+        if (!IsReadOnly)
+        {
+            hoveredRating = 0;
+        }
+    }
+
+    private async Task SetRating(int rating)
+    {
+        if (!IsReadOnly)
+        {
+            Rating = rating;
+            hoveredRating = 0;
+            if (RatingChanged.HasDelegate)
+            {
+                await RatingChanged.InvokeAsync(rating);
+            }
+        }
+    }
+}

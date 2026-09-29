@@ -45,6 +45,24 @@ builder.Services
     {
         options.Events = new JwtBearerEvents
         {
+            OnTokenValidated = async context =>
+            {
+                var userId = context.Principal?.FindFirst(
+                    System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    context.Fail("The token has no user identity.");
+                    return;
+                }
+
+                var userManager = context.HttpContext.RequestServices
+                    .GetRequiredService<UserManager<ApplicationUser>>();
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null || await userManager.IsLockedOutAsync(user))
+                {
+                    context.Fail("The account is suspended or no longer exists.");
+                }
+            },
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query["access_token"];
@@ -90,6 +108,7 @@ builder.Services.AddScoped<JobService>();
 builder.Services.AddScoped<JobApplicationService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<AdminService>();
 
 // ============================================================
 // CONTROLLERS
