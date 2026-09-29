@@ -2,137 +2,134 @@
 @page "/reviews/{UserId}"
 @using StudentJobHub.Client.Models
 @using StudentJobHub.Client.Services
-@inject ReviewApiService ReviewApiService
+@using StudentJobHub.Client.Components
 @inject AuthService AuthService
+@inject NavigationManager Navigation
 
-<PageTitle>Reviews | Student Job Hub</PageTitle>
+<PageTitle>Reviews & Ratings | Student Job Hub</PageTitle>
 
-<div class="page-container">
-	<h1>Reviews</h1>
-	@if (string.IsNullOrWhiteSpace(UserId))
-	{
-		<div class="empty-state">
-			<p>Open a user's review link to view their reviews.</p>
-		</div>
-	}
-	else if (isLoading)
-	{
-		<div class="loading-state">Loading reviews...</div>
-	}
-	else if (!string.IsNullOrEmpty(errorMessage))
-	{
-		<div class="error-state"><p>@errorMessage</p></div>
-	}
-	else if (reviews.Count == 0)
-	{
-		<div class="empty-state"><p>No reviews have been posted yet.</p></div>
-	}
-	else
-	{
-		<div class="reviews-list">
+<div class="reviews-page-container">
+    <div class="page-top-nav mb-3">
+        <a href="javascript:history.back()" class="back-link">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+    </div>
 
-	@if (!string.IsNullOrWhiteSpace(UserId) && AuthService.IsLoggedIn)
-	{
-		<section class="review-form">
-			<h2>Leave a Review</h2>
-			<EditForm Model="@newReview" OnValidSubmit="CreateReviewAsync">
-				<DataAnnotationsValidator />
-				<div class="form-group">
-					<label for="rating">Rating</label>
-					<InputNumber id="rating" class="form-control" @bind-Value="newReview.Rating" />
-					<ValidationMessage For="@(() => newReview.Rating)" />
-				</div>
-				<div class="form-group">
-					<label for="comment">Comment</label>
-					<InputTextArea id="comment" class="form-control" @bind-Value="newReview.Comment" rows="4" />
-				</div>
-				@if (!string.IsNullOrEmpty(createError))
-				{
-					<p class="error-state">@createError</p>
-				}
-				<button type="submit" class="primary-button" disabled="@isCreating">
-					@(isCreating ? "Submitting..." : "Submit Review")
-				</button>
-			</EditForm>
-		</section>
-	}
-			@foreach (var review in reviews)
-			{
-				<article class="review-card">
-					<h2>@review.Rating / 5</h2>
-					<p>@review.Comment</p>
-					<small>By @review.ReviewerName on @review.CreatedAt.ToString("dd MMM yyyy")</small>
-				</article>
-			}
-		</div>
-	}
+    @if (!string.IsNullOrWhiteSpace(EffectiveUserId))
+    {
+        <div class="reviews-page-card">
+            <div class="reviews-card-header">
+                <div>
+                    <h1 class="page-title">
+                        <i class="bi bi-star-fill text-warning me-2"></i>
+                        @(isViewingSelf ? "Your Reviews & Reputation" : "Community Reviews")
+                    </h1>
+                    <p class="page-subtitle">
+                        @(isViewingSelf 
+                            ? "View ratings and feedback left by campus employers and students you have collaborated with." 
+                            : "Explore verified peer feedback and ratings from the campus community.")
+                    </p>
+                </div>
+            </div>
+
+            <ReviewSection TargetUserId="@EffectiveUserId" 
+                           TargetUserName="@(isViewingSelf ? (AuthService.User?.FullName ?? "You") : "")" 
+                           ContextTitle="@(isViewingSelf ? "Your Profile" : "Member")" />
+        </div>
+    }
+    else
+    {
+        <div class="reviews-page-card text-center py-5">
+            <div class="empty-icon-wrap mb-3">
+                <i class="bi bi-shield-check text-primary fs-1"></i>
+            </div>
+            <h2 class="fw-bold mb-2">Campus Peer Reviews & Ratings</h2>
+            <p class="text-muted mx-auto" style="max-width: 500px;">
+                Ratings build trust on Student Job Hub. View verified reviews on job listings and freelance service profiles across the platform.
+            </p>
+
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                <a href="jobs" class="btn btn-primary">
+                    <i class="bi bi-briefcase me-1"></i> Browse Jobs
+                </a>
+                <a href="services" class="btn btn-outline-secondary">
+                    <i class="bi bi-tools me-1"></i> Browse Services
+                </a>
+            </div>
+        </div>
+    }
 </div>
 
+<style>
+    .reviews-page-container {
+        max-width: 950px;
+        margin: 0 auto;
+        padding: 30px 16px;
+    }
+
+    .back-link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    .reviews-page-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 32px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    body.dark-mode .reviews-page-card {
+        background-color: #1e293b;
+        border-color: #334155;
+    }
+
+    .reviews-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .reviews-card-header {
+        border-color: #334155;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+    }
+
+    body.dark-mode .page-title {
+        color: #f8fafc;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    body.dark-mode .page-subtitle {
+        color: #94a3b8;
+    }
+</style>
+
 @code {
-	[Parameter] public string? UserId { get; set; }
+    [Parameter]
+    public string? UserId { get; set; }
 
-	private List<ReviewModel> reviews = new();
-	private CreateReviewModel newReview = new();
-	private bool isLoading;
-	private bool isCreating;
-	private string? errorMessage;
-	private string? createError;
-
-	protected override async Task OnParametersSetAsync()
-	{
-		if (string.IsNullOrWhiteSpace(UserId))
-		{
-			return;
-		}
-
-		isLoading = true;
-		errorMessage = null;
-		try
-		{
-			reviews = await ReviewApiService.GetUserReviewsAsync(UserId);
-		}
-		catch (Exception ex)
-		{
-			errorMessage = $"Unable to load reviews: {ex.Message}";
-		}
-		finally
-		{
-			isLoading = false;
-		}
-	}
-
-	private async Task CreateReviewAsync()
-	{
-		if (newReview.Rating is < 1 or > 5)
-		{
-			createError = "Rating must be between 1 and 5.";
-			return;
-		}
-
-		isCreating = true;
-		createError = null;
-		newReview.RevieweeId = UserId!;
-
-		try
-		{
-			var response = await ReviewApiService.CreateAsync(newReview);
-			if (response.IsSuccessStatusCode)
-			{
-				newReview = new CreateReviewModel();
-				await OnParametersSetAsync();
-			}
-			else
-			{
-				createError = await response.Content.ReadAsStringAsync();
-			}
-		}
-		catch (Exception ex)
-		{
-			createError = $"Unable to submit review: {ex.Message}";
-		}
-		finally
-		{
-			isCreating = false;
-		}
-	}
+    private string? EffectiveUserId => !string.IsNullOrWhiteSpace(UserId) ? UserId : (AuthService.IsLoggedIn ? AuthService.User?.Id : null);
+    private bool isViewingSelf => AuthService.IsLoggedIn && EffectiveUserId == AuthService.User?.Id;
 }

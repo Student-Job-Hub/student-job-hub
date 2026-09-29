@@ -1,0 +1,373 @@
+@page "/admin"
+@using StudentJobHub.Client.Models
+@using StudentJobHub.Client.Services
+@inject AdminApiService AdminApi
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Admin Console | Student Job Hub</PageTitle>
+
+<div class="admin-page">
+    @if (!AuthService.HasRole("Admin"))
+    {
+        <section class="access-state">
+            <span class="eyebrow">RESTRICTED AREA</span>
+            <h1>Administrator access required</h1>
+            <p>This workspace is available to platform administrators only.</p>
+            <a href="/dashboard">Return to dashboard</a>
+        </section>
+    }
+    else
+    {
+        <header class="admin-header">
+            <div>
+                <span class="eyebrow">STUDENT JOB HUB / OPERATIONS</span>
+                <h1>Admin console</h1>
+                <p>Platform health, member access, and marketplace moderation.</p>
+            </div>
+            <button class="refresh-button" @onclick="LoadAsync" disabled="isLoading" title="Refresh dashboard">
+                <i class="bi bi-arrow-clockwise"></i><span>Refresh</span>
+            </button>
+        </header>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="notice error-notice" role="alert">
+                <span>@errorMessage</span>
+                <button @onclick="LoadAsync">Retry</button>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(statusMessage))
+        {
+            <div class="notice success-notice" role="status">@statusMessage</div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="loading-state"><span class="spinner-border spinner-border-sm"></span> Loading platform data...</div>
+        }
+        else
+        {
+            <section class="metrics-grid" aria-label="Platform analytics">
+                <article class="metric metric-users">
+                    <span class="metric-label">MEMBERS</span>
+                    <strong>@(overview?.TotalUsers ?? 0)</strong>
+                    <small>+@(overview?.NewUsersThisMonth ?? 0) this month</small>
+                </article>
+                <article class="metric metric-jobs">
+                    <span class="metric-label">OPEN JOBS</span>
+                    <strong>@(overview?.OpenJobs ?? 0)</strong>
+                    <small>of @(overview?.TotalJobs ?? 0) total listings</small>
+                </article>
+                <article class="metric metric-services">
+                    <span class="metric-label">SERVICES</span>
+                    <strong>@(overview?.TotalServices ?? 0)</strong>
+                    <small>currently listed</small>
+                </article>
+                <article class="metric metric-applications">
+                    <span class="metric-label">APPLICATIONS</span>
+                    <strong>@(overview?.TotalApplications ?? 0)</strong>
+                    <small>@(overview?.SuspendedUsers ?? 0) suspended accounts</small>
+                </article>
+            </section>
+
+            <nav class="admin-tabs" aria-label="Admin sections">
+                <button class="@(activeTab == "overview" ? "selected" : "")" @onclick='() => SelectTab("overview")'>Overview</button>
+                <button class="@(activeTab == "users" ? "selected" : "")" @onclick='() => SelectTab("users")'>Users <span>@users.Count</span></button>
+                <button class="@(activeTab == "jobs" ? "selected" : "")" @onclick='() => SelectTab("jobs")'>Jobs <span>@jobs.Count</span></button>
+                <button class="@(activeTab == "services" ? "selected" : "")" @onclick='() => SelectTab("services")'>Services <span>@services.Count</span></button>
+            </nav>
+
+            @if (activeTab == "overview")
+            {
+                <section class="overview-panel">
+                    <div class="panel-heading">
+                        <div><span class="eyebrow">AT A GLANCE</span><h2>Marketplace overview</h2></div>
+                        <span class="updated-label">Updated @DateTime.Now.ToString("h:mm tt")</span>
+                    </div>
+                    <div class="overview-columns">
+                        <button class="overview-link" @onclick='() => SelectTab("users")'>
+                            <span class="overview-icon users-icon"><i class="bi bi-people-fill"></i></span>
+                            <span><strong>Member access</strong><small>@(overview?.SuspendedUsers ?? 0) suspended · @(overview?.TotalUsers ?? 0) total</small></span>
+                            <i class="bi bi-arrow-up-right"></i>
+                        </button>
+                        <button class="overview-link" @onclick='() => SelectTab("jobs")'>
+                            <span class="overview-icon jobs-icon"><i class="bi bi-briefcase-fill"></i></span>
+                            <span><strong>Job listings</strong><small>@(overview?.OpenJobs ?? 0) open · @(overview?.TotalJobs ?? 0) total</small></span>
+                            <i class="bi bi-arrow-up-right"></i>
+                        </button>
+                        <button class="overview-link" @onclick='() => SelectTab("services")'>
+                            <span class="overview-icon services-icon"><i class="bi bi-tools"></i></span>
+                            <span><strong>Service listings</strong><small>@(overview?.TotalServices ?? 0) active listings</small></span>
+                            <i class="bi bi-arrow-up-right"></i>
+                        </button>
+                    </div>
+                </section>
+            }
+            else if (activeTab == "users")
+            {
+                <section class="data-panel">
+                    <div class="panel-heading">
+                        <div><span class="eyebrow">MEMBER DIRECTORY</span><h2>Manage users</h2></div>
+                        <label class="search-box"><i class="bi bi-search"></i><input aria-label="Search users" placeholder="Search name or email" @bind="userSearch" @bind:event="oninput" /></label>
+                    </div>
+                    @if (FilteredUsers.Count == 0)
+                    {
+                        <p class="empty-state">No members match this search.</p>
+                    }
+                    else
+                    {
+                        <div class="table-scroll"><table>
+                            <thead><tr><th>Member</th><th>Role</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+                            <tbody>
+                            @foreach (var user in FilteredUsers)
+                            {
+                                <tr @key="user.Id">
+                                    <td><strong>@user.FullName</strong><small>@user.Email</small></td>
+                                    <td><div class="role-list">@foreach (var role in user.Roles) { <span>@role</span> }</div></td>
+                                    <td>@user.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                    <td><span class="status-pill @(user.IsSuspended ? "suspended" : "active")">@(user.IsSuspended ? "Suspended" : "Active")</span></td>
+                                    <td class="action-cell"><button class="@(user.IsSuspended ? "text-action activate" : "text-action suspend")" @onclick="() => ChangeSuspensionAsync(user)">@(user.IsSuspended ? "Reactivate" : "Suspend")</button></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table></div>
+                    }
+                </section>
+            }
+            else if (activeTab == "jobs")
+            {
+                <section class="data-panel">
+                    <div class="panel-heading"><div><span class="eyebrow">MARKETPLACE MODERATION</span><h2>Job listings</h2></div><span class="updated-label">Close suspicious or outdated listings</span></div>
+                    @if (jobs.Count == 0)
+                    {
+                        <p class="empty-state">No job listings have been posted.</p>
+                    }
+                    else
+                    {
+                        <div class="table-scroll"><table>
+                            <thead><tr><th>Listing</th><th>Posted by</th><th>Created</th><th>Status</th><th></th></tr></thead>
+                            <tbody>
+                            @foreach (var job in jobs)
+                            {
+                                <tr @key="job.Id">
+                                    <td><strong>@job.Title</strong><small>#@job.Id</small></td>
+                                    <td><strong>@job.PostedByName</strong><small>@job.PostedByEmail</small></td>
+                                    <td>@job.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                    <td><span class="status-pill @(job.IsOpen ? "active" : "neutral")">@(job.IsOpen ? "Open" : "Closed")</span></td>
+                                    <td class="action-cell">@if (job.IsOpen) { <button class="text-action suspend" @onclick="() => CloseJobAsync(job)">Close listing</button> }</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table></div>
+                    }
+                </section>
+            }
+            else
+            {
+                <section class="data-panel">
+                    <div class="panel-heading"><div><span class="eyebrow">MARKETPLACE MODERATION</span><h2>Service listings</h2></div><span class="updated-label">Remove policy-violating listings</span></div>
+                    @if (services.Count == 0)
+                    {
+                        <p class="empty-state">No service listings have been posted.</p>
+                    }
+                    else
+                    {
+                        <div class="table-scroll"><table>
+                            <thead><tr><th>Service</th><th>Provider</th><th>Price</th><th>Created</th><th></th></tr></thead>
+                            <tbody>
+                            @foreach (var service in services)
+                            {
+                                <tr @key="service.Id">
+                                    <td><strong>@service.Title</strong><small>#@service.Id</small></td>
+                                    <td><strong>@service.ProviderName</strong><small>@service.ProviderEmail</small></td>
+                                    <td>GH₵ @service.Price.ToString("N2")</td>
+                                    <td>@service.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                    <td class="action-cell"><button class="text-action suspend" @onclick="() => DeleteServiceAsync(service)">Remove</button></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table></div>
+                    }
+                </section>
+            }
+        }
+    }
+</div>
+
+<style>
+    .admin-page { --ink: #182622; --muted: #697772; --line: #dce5df; --paper: #f5f8f5; max-width: 1280px; margin: 0 auto; padding: 20px 0 56px; color: var(--ink); }
+    .admin-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; padding: 12px 0 26px; border-bottom: 1px solid var(--line); }
+    .admin-header h1 { font-size: 2rem; margin: 7px 0 4px; font-weight: 750; }
+    .admin-header p { color: var(--muted); margin: 0; }
+    .eyebrow { color: #557364; font-size: .7rem; font-weight: 800; letter-spacing: .08em; }
+    .refresh-button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: white; padding: 9px 13px; border-radius: 5px; color: var(--ink); }
+    .refresh-button:disabled { opacity: .55; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 30px; }
+    .metric { min-height: 132px; padding: 17px 18px; border: 1px solid var(--line); border-top: 3px solid #43836d; background: white; display: flex; flex-direction: column; align-items: flex-start; }
+    .metric-jobs { border-top-color: #ca7547; }.metric-services { border-top-color: #5682a0; }.metric-applications { border-top-color: #a88b42; }
+    .metric-label { font-size: .7rem; font-weight: 800; color: var(--muted); letter-spacing: .07em; }
+    .metric strong { font-size: 2rem; line-height: 1.25; margin: 6px 0 1px; }
+    .metric small { color: var(--muted); }
+    .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 20px; overflow-x: auto; }
+    .admin-tabs button { flex: 0 0 auto; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #596962; padding: 11px 15px; font-weight: 650; }
+    .admin-tabs button.selected { color: #205a43; border-bottom-color: #328164; }
+    .admin-tabs button span { display: inline-block; font-size: .72rem; color: #687871; background: #edf2ee; border-radius: 10px; padding: 1px 7px; margin-left: 4px; }
+    .overview-panel, .data-panel { background: white; border: 1px solid var(--line); }
+    .panel-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+    .panel-heading h2 { margin: 4px 0 0; font-size: 1.25rem; font-weight: 720; }
+    .updated-label { color: var(--muted); font-size: .82rem; }
+    .overview-columns { display: grid; grid-template-columns: repeat(3, 1fr); }
+    .overview-link { display: flex; align-items: center; gap: 13px; min-width: 0; text-align: left; padding: 20px; background: white; border: 0; border-right: 1px solid var(--line); color: inherit; }
+    .overview-link:last-child { border-right: 0; }.overview-link:hover { background: var(--paper); }
+    .overview-link > span:nth-child(2) { display: grid; gap: 4px; flex: 1; }.overview-link small { color: var(--muted); }
+    .overview-link > i { color: #72837a; }.overview-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 5px; }
+    .users-icon { color: #277455; background: #e8f3ec; }.jobs-icon { color: #a95532; background: #faeee8; }.services-icon { color: #416e89; background: #eaf1f5; }
+    .search-box { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; color: var(--muted); min-width: min(300px, 45vw); }
+    .search-box input { width: 100%; border: 0; outline: 0; color: var(--ink); }
+    .table-scroll { overflow-x: auto; } table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    th { text-align: left; padding: 11px 16px; color: #697772; font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; background: #f7f9f7; }
+    td { padding: 13px 16px; border-top: 1px solid #edf1ed; font-size: .88rem; vertical-align: middle; }
+    td strong, td small { display: block; }td small { color: var(--muted); margin-top: 3px; font-size: .78rem; }
+    .role-list { display: flex; gap: 4px; flex-wrap: wrap; }.role-list span { background: #eef3ef; color: #405c4e; border-radius: 3px; padding: 3px 7px; font-size: .75rem; }
+    .status-pill { display: inline-block; border-radius: 3px; padding: 4px 8px; font-size: .74rem; font-weight: 700; }.status-pill.active { color: #206744; background: #e7f4eb; }.status-pill.suspended { color: #973f2c; background: #faebe6; }.status-pill.neutral { color: #65716b; background: #edf0ed; }
+    .action-cell { text-align: right; white-space: nowrap; }.text-action { border: 0; background: transparent; font-weight: 700; padding: 5px 3px; }.text-action.suspend { color: #a44430; }.text-action.activate { color: #23724d; }.text-action:hover { text-decoration: underline; }
+    .empty-state { color: var(--muted); padding: 28px 20px; margin: 0; }.loading-state { display: flex; align-items: center; gap: 10px; padding: 45px; justify-content: center; color: var(--muted); }
+    .notice { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 13px; margin: 12px 0; border-radius: 4px; }.error-notice { color: #8c3026; background: #fff0ec; }.success-notice { color: #256144; background: #eaf5ed; }.notice button { border: 0; background: transparent; text-decoration: underline; color: inherit; }
+    .access-state { padding: 54px 25px; text-align: center; border: 1px solid var(--line); background: white; }.access-state h1 { font-size: 1.6rem; margin: 8px 0; }.access-state p { color: var(--muted); }.access-state a { color: #25674b; font-weight: 700; }
+    @@media (max-width: 760px) { .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.overview-columns { grid-template-columns: 1fr; }.overview-link { border-right: 0; border-bottom: 1px solid var(--line); }.overview-link:last-child { border-bottom: 0; }.admin-header { align-items: flex-start; }.updated-label { display: none; }.panel-heading { align-items: flex-start; flex-direction: column; }.search-box { min-width: 100%; } }
+    @@media (max-width: 460px) { .admin-page { padding-top: 8px; }.admin-header h1 { font-size: 1.65rem; }.admin-header { flex-direction: column; }.metrics-grid { gap: 8px; }.metric { min-height: 120px; padding: 13px; }.metric strong { font-size: 1.7rem; }.admin-tabs button { padding: 10px; } }
+</style>
+
+@code {
+    private AdminOverviewModel? overview;
+    private List<AdminUserModel> users = new();
+    private List<AdminJobModel> jobs = new();
+    private List<AdminServiceModel> services = new();
+    private string activeTab = "overview";
+    private string userSearch = string.Empty;
+    private string? errorMessage;
+    private string? statusMessage;
+    private bool isLoading = true;
+
+    private List<AdminUserModel> FilteredUsers => users
+        .Where(user => string.IsNullOrWhiteSpace(userSearch) ||
+            user.FullName.Contains(userSearch, StringComparison.OrdinalIgnoreCase) ||
+            user.Email.Contains(userSearch, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthService.HasRole("Admin"))
+        {
+            await LoadAsync();
+        }
+        else
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        statusMessage = null;
+        try
+        {
+            overview = await AdminApi.GetOverviewAsync();
+            users = await AdminApi.GetUsersAsync();
+            jobs = await AdminApi.GetJobsAsync();
+            services = await AdminApi.GetServicesAsync();
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Could not load admin data. Check the API connection and try again.";
+        }
+        catch (TaskCanceledException)
+        {
+            errorMessage = "The admin request timed out. Try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectTab(string tab)
+    {
+        activeTab = tab;
+        statusMessage = null;
+    }
+
+    private async Task ChangeSuspensionAsync(AdminUserModel user)
+    {
+        var action = user.IsSuspended ? "reactivate" : "suspend";
+        if (!await JS.InvokeAsync<bool>("confirm", $"Are you sure you want to {action} {user.FullName}?"))
+        {
+            return;
+        }
+
+        var response = await AdminApi.SetUserSuspensionAsync(user.Id, !user.IsSuspended);
+        if (response.IsSuccessStatusCode)
+        {
+            user.IsSuspended = !user.IsSuspended;
+            statusMessage = $"{user.FullName} was {action}d.";
+            if (overview != null)
+            {
+                overview.SuspendedUsers += user.IsSuspended ? 1 : -1;
+            }
+        }
+        else
+        {
+            errorMessage = "The account status could not be changed.";
+        }
+    }
+
+    private async Task CloseJobAsync(AdminJobModel job)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", $"Close the listing '{job.Title}'?"))
+        {
+            return;
+        }
+
+        var response = await AdminApi.CloseJobAsync(job.Id);
+        if (response.IsSuccessStatusCode)
+        {
+            job.IsOpen = false;
+            if (overview != null)
+            {
+                overview.OpenJobs--;
+            }
+            statusMessage = $"'{job.Title}' is now closed.";
+        }
+        else
+        {
+            errorMessage = "The job listing could not be closed.";
+        }
+    }
+
+    private async Task DeleteServiceAsync(AdminServiceModel service)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", $"Remove the service listing '{service.Title}'? This cannot be undone."))
+        {
+            return;
+        }
+
+        var response = await AdminApi.DeleteServiceAsync(service.Id);
+        if (response.IsSuccessStatusCode)
+        {
+            services.Remove(service);
+            if (overview != null)
+            {
+                overview.TotalServices--;
+            }
+            statusMessage = $"'{service.Title}' was removed.";
+        }
+        else
+        {
+            errorMessage = "The service listing could not be removed.";
+        }
+    }
+}

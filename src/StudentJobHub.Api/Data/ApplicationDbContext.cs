@@ -22,6 +22,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    public DbSet<DirectMessage> DirectMessages => Set<DirectMessage>();
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -94,6 +96,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(n => n.User)
             .WithMany()
             .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<DirectMessage>()
+            .HasOne(message => message.Application)
+            .WithMany()
+            .HasForeignKey(message => message.ApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DirectMessage>()
+            .HasOne(message => message.Sender)
+            .WithMany()
+            .HasForeignKey(message => message.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

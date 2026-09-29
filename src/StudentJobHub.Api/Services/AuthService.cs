@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StudentJobHub.Api.DTOs.Auth;
 using StudentJobHub.Api.Models;
@@ -21,21 +23,21 @@ public class AuthService
         _configuration = configuration;
     }
 
-    public async Task<(bool Success, string Message, string? Token)> RegisterAsync(
+    public async Task<(bool Success, string Message, string? Token, string? RefreshToken)> RegisterAsync(
         RegisterDto dto)
     {
         var allowedRoles = new[] { "Student", "Lecturer", "Business" };
 
         if (!allowedRoles.Contains(dto.Role, StringComparer.OrdinalIgnoreCase))
         {
-            return (false, "Invalid role selected.", null);
+            return (false, "Invalid role selected.", null, null);
         }
 
         var existingUser = await _userManager.FindByEmailAsync(dto.Email);
 
         if (existingUser != null)
         {
-            return (false, "A user with this email already exists.", null);
+            return (false, "A user with this email already exists.", null, null);
         }
 
         var user = new ApplicationUser
@@ -55,26 +57,31 @@ public class AuthService
                 "; ",
                 result.Errors.Select(error => error.Description));
 
-            return (false, errors, null);
+            return (false, errors, null, null);
         }
 
         await _userManager.AddToRoleAsync(
             user,
             NormalizeRole(dto.Role));
 
-        var token = await GenerateJwtTokenAsync(user);
+        var tokens = await IssueTokensAsync(user);
 
-        return (true, "Registration successful.", token);
+        return (true, "Registration successful.", tokens.Token, tokens.RefreshToken);
     }
 
-    public async Task<(bool Success, string Message, string? Token)> LoginAsync(
+    public async Task<(bool Success, string Message, string? Token, string? RefreshToken)> LoginAsync(
         LoginDto dto)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
 
         if (user == null)
         {
-            return (false, "Invalid email or password.", null);
+            return (false, "Invalid email or password.", null, null);
+        }
+
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return (false, "This account is suspended.", null, null);
         }
 
         var validPassword = await _userManager.CheckPasswordAsync(
@@ -83,12 +90,59 @@ public class AuthService
 
         if (!validPassword)
         {
-            return (false, "Invalid email or password.", null);
+            return (false, "Invalid email or password.", null, null);
         }
 
-        var token = await GenerateJwtTokenAsync(user);
+        var tokens = await IssueTokensAsync(user);
 
-        return (true, "Login successful.", token);
+        return (true, "Login successful.", tokens.Token, tokens.RefreshToken);
+    }
+
+    public async Task<(bool Success, string Message, string? Token, string? RefreshToken)> RefreshAsync(
+        string refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return (false, "Invalid refresh token.", null, null);
+        }
+
+        var tokenHash = HashRefreshToken(refreshToken);
+        var user = await _userManager.Users.FirstOrDefaultAsync(
+            candidate => candidate.RefreshTokenHash == tokenHash);
+
+        if (user == null || user.RefreshTokenExpiresAt <= DateTime.UtcNow ||
+            await _userManager.IsLockedOutAsync(user))
+        {
+            return (false, "Invalid or expired refresh token.", null, null);
+        }
+
+        var tokens = await IssueTokensAsync(user);
+        return (true, "Token refreshed.", tokens.Token, tokens.RefreshToken);
+    }
+
+    private async Task<(string Token, string RefreshToken)> IssueTokensAsync(
+        ApplicationUser user)
+    {
+        var token = await GenerateJwtTokenAsync(user);
+        var refreshToken = Convert.ToBase64String(
+            RandomNumberGenerator.GetBytes(64));
+
+        user.RefreshTokenHash = HashRefreshToken(refreshToken);
+        user.RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(30);
+
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException("Could not save the refresh token.");
+        }
+
+        return (token, refreshToken);
+    }
+
+    private static string HashRefreshToken(string refreshToken)
+    {
+        return Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
     }
 
     private async Task<string> GenerateJwtTokenAsync(

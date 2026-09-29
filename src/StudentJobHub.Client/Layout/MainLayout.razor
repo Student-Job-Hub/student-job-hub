@@ -13,14 +13,18 @@
         <div class="top-row px-4 d-flex justify-content-between align-items-center">
             <!-- Right Side Utility Controls -->
             <div class="d-flex align-items-center gap-3 ms-auto">
-                <!-- Settings Icon -->
-                <a href="/settings" class="icon-btn position-relative" title="Settings">
-                    <i class="bi bi-gear fs-5"></i>
-                </a>
                 <!-- Notifications Icon -->
                 <a href="/notifications" class="icon-btn position-relative" title="Notifications">
                     <i class="bi bi-bell fs-5"></i>
                 </a>
+
+                <button type="button"
+                        class="theme-toggle-btn"
+                        @onclick="ToggleTheme"
+                        aria-label="@(ThemeService.IsDarkMode ? "Switch to light mode" : "Switch to dark mode")">
+                    <i class="bi @(ThemeService.IsDarkMode ? "bi-sun" : "bi-moon")"></i>
+                    <span>@(ThemeService.IsDarkMode ? "Light mode" : "Dark mode")</span>
+                </button>
 
                 <!-- Vertical Divider -->
                 <div class="vr mx-1"></div>
@@ -30,7 +34,7 @@
                     <div class="user-avatar-sm">
                         <i class="bi bi-person-fill"></i>
                     </div>
-                    <span class="d-none d-md-inline text-dark fw-semibold">My Account</span>
+                    <span class="d-none d-md-inline fw-semibold">My Account</span>
                 </a>
             </div>
         </div>
@@ -78,6 +82,12 @@
     .icon-btn:hover {
         background-color: #f3f4f6;
         color: #2563eb;
+    }
+
+    .theme-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .user-avatar-sm {

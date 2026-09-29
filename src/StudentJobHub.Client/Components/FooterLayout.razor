@@ -6,13 +6,10 @@
 
 @* 
 // a Footer component for the StudentJobHub application
-// showing privacy and terms of service and also company's name and date of creation
+// showing privacy and terms of service for the Student Job Hub application
 *@
 
 @code {
-    private string companyName = "OptiTech Solutions";
-    private string dateOfCreation = "2026";
-
     // navigate to terms and conditions page
     private void NavigateToTermsOfService()
     {
@@ -37,13 +34,13 @@
     <div class="container">
         <div class="row">
             <div class="col-12 text-center">
-                <p>&copy; @dateOfCreation @companyName. All rights reserved.</p>
+                <p>&copy; Student Job Hub. All rights reserved.</p>
             </div>
         </div>
         <div class="row">
             <div class="col-12 text-center">
                 <p class="footer-link">
-                    <a href="/privacy-policy">Privacy Policy</a> | 
+                    <a href="/privacy-policy">Privacy Policy</a> |
                     <a href="/terms-of-services">Terms of Service</a>
                 </p>
             </div>
@@ -61,6 +58,7 @@
 <style>
     footer {
         background-color: #f5f5f5;
+        color: #475569;
         padding: 20px;
         margin-top: 50px;
     }
@@ -89,6 +87,16 @@
         transition: color 0.5s ease-in-out;
         text-decoration: underline;
     }
+
+    body.dark-mode footer {
+        background-color: #111827;
+        border-top: 1px solid #334155;
+        color: #cbd5e1;
+    }
+
+    body.dark-mode footer .footer-link a {
+        color: #7dd3fc;
+    }
    
 
     
@@ -102,6 +110,5 @@
 
     .row:first-child {
         margin-top: 0;
-}
-
+    }
 </style>
