@@ -7,6 +7,8 @@
 
 <PageTitle>My Applications - Student Job Hub</PageTitle>
 
+<SeoHead Title="Student Job Hub" NoIndex="true" />
+
 <div class="applications-page">
 
     <div class="page-header">
@@ -102,6 +104,14 @@
                         </p>
 
                     </div>
+
+                    @if (!string.IsNullOrEmpty(application.ResumeFileName))
+                    {
+                        <button type="button" class="resume-info" @onclick="() => DownloadResumeAsync(application)">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            <span>@application.ResumeFileName</span>
+                        </button>
+                    }
 
                     <div class="application-footer">
 
@@ -265,6 +275,27 @@
         color: #4b5563;
         line-height: 1.6;
         white-space: pre-wrap;
+    }
+
+    .resume-info {
+        width: 100%;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #92400e;
+    }
+
+    .resume-info i {
+        color: #dc2626;
+        font-size: 16px;
     }
 
     .application-footer {
@@ -448,6 +479,28 @@
         catch (Exception ex)
         {
             ToastService.ShowError($"Print error: {ex.Message}");
+    private async Task DownloadResumeAsync(ApplicationModel application)
+    {
+        try
+        {
+            var stream = await ApplicationService.GetResumeStreamAsync(application.Id);
+
+            if (stream == null)
+            {
+                errorMessage = "The resume could not be downloaded.";
+                return;
+            }
+
+            using var streamReference = new DotNetStreamReference(stream);
+
+            await JSRuntime.InvokeVoidAsync(
+                "downloadFileFromStream",
+                application.ResumeFileName ?? "resume",
+                streamReference);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
         }
     }
 

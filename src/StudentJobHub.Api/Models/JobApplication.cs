@@ -16,5 +16,9 @@ public class JobApplication
 
     public string Status { get; set; } = "Pending";
 
+    public string? ResumeFileName { get; set; }
+
+    public string? ResumeContentType { get; set; }
+
     public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
 }

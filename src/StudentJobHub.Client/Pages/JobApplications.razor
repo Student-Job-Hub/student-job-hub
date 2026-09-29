@@ -3,8 +3,11 @@
 @using StudentJobHub.Client.Services
 @inject ApplicationApiService ApplicationService
 @inject JobApiService JobService
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Job Applications | Student Job Hub</PageTitle>
+
+<SeoHead Title="Student Job Hub" NoIndex="true" />
 
 <div class="page-container">
     <a href="/my-jobs" style="color: #2563eb;">Back to My Jobs</a>
@@ -41,6 +44,12 @@
                     </div>
                     <p>@application.Message</p>
                     <div class="application-actions">
+                        @if (!string.IsNullOrEmpty(application.ResumeFileName))
+                        {
+                            <button type="button" class="resume-link" @onclick="() => DownloadResumeAsync(application)">
+                                <i class="bi bi-file-earmark-pdf"></i> @application.ResumeFileName
+                            </button>
+                        }
                         <a class="message-link" href="/messages/@application.Id">Message applicant</a>
                         <button @onclick="() => AcceptAsync(application)" class="accept-button"
                                 disabled="@IsUpdating(application.Id)">Accept</button>
@@ -107,6 +116,22 @@
 
     .application-card:not(:last-child) {
         margin-bottom: 12px;
+    }
+
+    .resume-link {
+        display: inline-block;
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+        margin-right: 12px;
+        color: #dc2626;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .resume-link:hover {
+        text-decoration: underline;
     }
 
     .application-status {
@@ -185,6 +210,31 @@
         finally
         {
             updatingApplicationId = null;
+        }
+    }
+
+    private async Task DownloadResumeAsync(ApplicationModel application)
+    {
+        try
+        {
+            var stream = await ApplicationService.GetResumeStreamAsync(application.Id);
+
+            if (stream == null)
+            {
+                errorMessage = "The resume could not be downloaded.";
+                return;
+            }
+
+            using var streamReference = new DotNetStreamReference(stream);
+
+            await JSRuntime.InvokeVoidAsync(
+                "downloadFileFromStream",
+                application.ResumeFileName ?? "resume",
+                streamReference);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
         }
     }
 }

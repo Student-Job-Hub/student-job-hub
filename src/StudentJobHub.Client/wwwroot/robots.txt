@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /notifications
+Disallow: /messages
+Disallow: /my-jobs
+Disallow: /my-services
+Disallow: /my-applications
+Disallow: /post-job
+Disallow: /create-service

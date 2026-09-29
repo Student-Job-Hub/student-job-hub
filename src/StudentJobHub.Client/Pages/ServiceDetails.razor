@@ -11,6 +11,13 @@
 
 <PageTitle>@(service?.Title ?? "Service Details") | Student Job Hub</PageTitle>
 
+<SeoHead Title="@(service?.Title ?? "Service Details")"
+         Description="@(service != null ? $"{service.Title} — {service.Description}" : "View service details on Student Job Hub.")"
+         UrlPath="@($"services/{Id}")"
+         Type="article" />
+
+
+
 <!-- arrow back to go to previous page -->
 <div class="back-button" @onclick="GoBack">
     <span class="arrow-icon">←</span>
