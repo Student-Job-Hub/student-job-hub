@@ -523,3 +523,13 @@ public class TestClientProxy : IClientProxy
 {
     public Task SendCoreAsync(string method, object?[] args, CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
+
+public class TestWebHostEnvironment : IWebHostEnvironment
+{
+    public string EnvironmentName { get; set; } = "Development";
+    public string ApplicationName { get; set; } = "StudentJobHub.Api";
+    public string WebRootPath { get; set; } = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+    public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+    public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+    public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+}
