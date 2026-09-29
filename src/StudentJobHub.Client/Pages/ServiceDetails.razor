@@ -5,8 +5,12 @@
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Service Details | Student Job Hub</PageTitle>
+<PageTitle>@(service?.Title ?? "Service Details") | Student Job Hub</PageTitle>
 
+<SeoHead Title="@(service?.Title ?? "Service Details")"
+         Description="@(service != null ? $"{service.Title} — {service.Description}" : "View service details on Student Job Hub.")"
+         UrlPath="@($"services/{Id}")"
+         Type="article" />
 
 
 

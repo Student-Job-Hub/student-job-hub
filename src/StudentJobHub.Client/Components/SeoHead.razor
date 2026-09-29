@@ -1,0 +1,68 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+@code {
+    /// <summary>Title used for og:title / twitter:title (the browser tab title still comes from &lt;PageTitle&gt;).</summary>
+    [Parameter] public string Title { get; set; } = "Student Job Hub";
+
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Path relative to the site root (e.g. "jobs/5"). Empty = home page.</summary>
+    [Parameter] public string? UrlPath { get; set; }
+
+    /// <summary>Open Graph type: "website" or "article".</summary>
+    [Parameter] public string Type { get; set; } = "website";
+
+    /// <summary>Image path or absolute URL. Defaults to the site preview image.</summary>
+    [Parameter] public string? Image { get; set; }
+
+    /// <summary>Set for private / low-value pages so search engines skip them.</summary>
+    [Parameter] public bool NoIndex { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var description = Truncate(Description, 160);
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("seo.set", new
+            {
+                title = Title,
+                description = description,
+                url = Navigation.ToAbsoluteUri(UrlPath ?? string.Empty).ToString(),
+                image = Navigation.ToAbsoluteUri(string.IsNullOrWhiteSpace(Image) ? "og-image.png" : Image).ToString(),
+                type = Type,
+                noIndex = NoIndex
+            });
+        }
+        catch (Exception)
+        {
+            // SEO tags are best-effort and must never break the page.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("seo.reset");
+        }
+        catch (Exception)
+        {
+            // Ignore: the JS runtime may already be gone during shutdown.
+        }
+    }
+
+    private static string? Truncate(string? text, int max)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        var clean = string.Join(' ', text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+        return clean.Length <= max ? clean : clean[..(max - 3)].TrimEnd() + "...";
+    }
+}
