@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using StudentJobHub.Api.Data;
 using StudentJobHub.Api.DTOs.Applications;
 using StudentJobHub.Api.DTOs.Auth;
@@ -43,18 +47,25 @@ public class ApiBehaviorTests
         var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
 
-        var authService = new AuthService(userManager, new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Jwt:Key"] = "StudentJobHub_Test_Key_1234567890_ABCDEFGH1234567890",
             ["Jwt:Issuer"] = "StudentJobHub",
             ["Jwt:Audience"] = "StudentJobHubAudience"
-        }).Build());
+        }).Build();
+
+        var authService = new AuthService(userManager, config);
 
         var jobService = new JobService(context);
         var notificationService = new NotificationService(context);
 
         var testHubContext = new TestHubContext();
-        var applicationService = new JobApplicationService(context, notificationService, testHubContext);
+        var emailService = new EmailNotificationService(
+            config,
+            NullLogger<EmailNotificationService>.Instance);
+        var testEnvironment = new TestWebHostEnvironment();
+        var applicationService = new JobApplicationService(
+            context, notificationService, testHubContext, emailService, testEnvironment);
         var serviceService = new ServiceService(context);
         var reviewService = new ReviewService(context);
 
