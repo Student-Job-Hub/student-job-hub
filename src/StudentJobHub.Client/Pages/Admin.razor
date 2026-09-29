@@ -238,6 +238,22 @@
     .access-state { padding: 54px 25px; text-align: center; border: 1px solid var(--line); background: white; }.access-state h1 { font-size: 1.6rem; margin: 8px 0; }.access-state p { color: var(--muted); }.access-state a { color: #25674b; font-weight: 700; }
     @@media (max-width: 760px) { .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.overview-columns { grid-template-columns: 1fr; }.overview-link { border-right: 0; border-bottom: 1px solid var(--line); }.overview-link:last-child { border-bottom: 0; }.admin-header { align-items: flex-start; }.updated-label { display: none; }.panel-heading { align-items: flex-start; flex-direction: column; }.search-box { min-width: 100%; } }
     @@media (max-width: 460px) { .admin-page { padding-top: 8px; }.admin-header h1 { font-size: 1.65rem; }.admin-header { flex-direction: column; }.metrics-grid { gap: 8px; }.metric { min-height: 120px; padding: 13px; }.metric strong { font-size: 1.7rem; }.admin-tabs button { padding: 10px; } }
+
+    /* Admin Dark Mode Overrides */
+    body.dark-mode .admin-page { --ink: #e2e8f0; --muted: #94a3b8; --line: #334155; --paper: #1e293b; color: var(--ink); }
+    body.dark-mode .metric { background: #1e293b !important; border-color: #334155 !important; }
+    body.dark-mode .overview-panel, body.dark-mode .data-panel { background: #1e293b !important; border-color: #334155 !important; }
+    body.dark-mode .overview-link { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    body.dark-mode .overview-link:hover { background: #273549 !important; }
+    body.dark-mode .refresh-button { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    body.dark-mode .access-state { background: #1e293b !important; border-color: #334155 !important; color: #e2e8f0 !important; }
+    body.dark-mode th { background: #0f172a !important; color: #94a3b8 !important; }
+    body.dark-mode td { border-color: #1e293b !important; }
+    body.dark-mode .admin-tabs button { color: #94a3b8; }
+    body.dark-mode .admin-tabs button.selected { color: #38bdf8; border-bottom-color: #38bdf8; }
+    body.dark-mode .search-box { border-color: #334155; }
+    body.dark-mode .search-box input { color: #e2e8f0; background: transparent; }
+    body.dark-mode .panel-heading { border-color: #334155; }
 </style>
 
 @code {
