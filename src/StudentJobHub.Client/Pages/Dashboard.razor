@@ -435,12 +435,17 @@
         gap: 14px;
         align-items: flex-start;
         padding: 20px;
-        border: 1px solid #576a91ff;
+        border: 1px solid var(--border-color, #e2e8f0);
         border-radius: 12px;
-        background: #fcfcc1ff;
+        background: var(--card-bg, #ffffff);
         text-decoration: none;
         color: inherit;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.dark-mode .action-card {
+        background: #1e293b;
+        border-color: #334155;
     }
 
     .action-card:hover {
@@ -450,12 +455,17 @@
 
     .action-card h3 {
         margin: 0 0 5px;
+        color: inherit;
     }
 
     .action-card p {
         margin: 0;
-        color:  black;
+        color: #64748b;
         font-size: 14px;
+    }
+
+    body.dark-mode .action-card p {
+        color: #94a3b8;
     }
 
     .action-icon i {
