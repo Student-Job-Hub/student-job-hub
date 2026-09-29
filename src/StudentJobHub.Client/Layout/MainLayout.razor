@@ -1,7 +1,12 @@
+@using StudentJobHub.Client.Services
+@using StudentJobHub.Client.Models
+
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject ThemeService ThemeService
 @implements IDisposable
+@inject AuthService AuthService
+@inject UserApiService UserService
 
 <div class="page">
     <div class="sidebar">
@@ -30,12 +35,19 @@
                 <div class="vr mx-1"></div>
 
                 <!-- User Profile Quick Badge -->
-                <a href="/profile" class="user-badge text-decoration-none d-flex align-items-center gap-2">
-                    <div class="user-avatar-sm">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                    <span class="d-none d-md-inline fw-semibold">My Account</span>
-                </a>
+<a href="/profile" class="user-badge text-decoration-none d-flex align-items-center gap-2">
+    <div class="user-avatar-sm">
+        @if (!string.IsNullOrEmpty(user?.ProfilePictureUrl))
+        {
+            <img src="@user.ProfilePictureUrl" alt="User Profile" class="avatar-img" />
+        }
+        else
+        {
+            <i class="bi bi-person-fill"></i>
+        }
+    </div>
+    <span class="d-none d-md-inline fw-semibold text-dark">My Account</span>
+</a>
             </div>
         </div>
 
@@ -54,6 +66,12 @@
         height: 3.5rem;
         background-color: #ffffff;
         border-bottom: 1px solid #e5e7eb;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    body.dark-mode .top-row {
+        background-color: #1e293b;
+        border-bottom: 1px solid #334155;
     }
 
     .topbar-search {
@@ -79,9 +97,18 @@
         transition: background-color 0.2s, color 0.2s;
     }
 
+    body.dark-mode .icon-btn {
+        color: #94a3b8;
+    }
+
     .icon-btn:hover {
         background-color: #f3f4f6;
         color: #2563eb;
+    }
+
+    body.dark-mode .icon-btn:hover {
+        background-color: #334155;
+        color: #60a5fa;
     }
 
     .theme-toggle-btn {
@@ -90,17 +117,25 @@
         gap: 6px;
     }
 
-    .user-avatar-sm {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background-color: #2563eb;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-    }
+   .user-avatar-sm {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%; 
+    background-color: #2563eb; 
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+}
 
     @@media (max-width: 576px) {
         .topbar-search {
@@ -110,11 +145,27 @@
 </style>
 
 @code {
+    private UserModel? user;
     private string searchTerm = "";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         ThemeService.OnThemeChanged += StateHasChangedHandler;
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        try
+        {
+            // Example: Fetch logged-in user profile from UserApiService or AuthService
+            // user = await UserService.GetCurrentUserAsync();
+        }
+        catch
+        {
+            // Fallback gracefully if not logged in
+            user = null;
+        }
     }
 
     private void StateHasChangedHandler()
