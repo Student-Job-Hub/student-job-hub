@@ -165,45 +165,13 @@ body.dark-mode .view-button:hover {
     background-color: #7dd3fc;
 }
 
-/* body.dark-mode .content,
-body.dark-mode main,
-body.dark-mode .page,
-body.dark-mode .jobs-page,
-body.dark-mode .services-page,
-body.dark-mode .post-job-page,
-body.dark-mode .my-jobs-page,
-body.dark-mode .auth-page,
-body.dark-mode .dashboard {
-    background-color: #0b0f19 !important;
-    color: #ffffff !important;
-}
-
-body.dark-mode .theme-toggle-btn {
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-    border: 1px solid #475569 !important;
-}
-
-body.dark-mode .theme-toggle-btn:hover {
-    background-color: #334155 !important;
-}
-
-body.dark-mode .job-card,
-body.dark-mode .stat-card,
-body.dark-mode .auth-card,
-body.dark-mode .action-card,
-body.dark-mode .service-card,
-body.dark-mode .my-jobs-header,
-body.dark-mode .jobs-toolbar,
-body.dark-mode .services-toolbar,
-body.dark-mode .modal-dialog-custom,
-body.dark-mode .post-job-form,
-body.dark-mode .empty-card,
-body.dark-mode .loading-card,
-body.dark-mode .error-card,
-body.dark-mode .dashboard-section,
-body.dark-mode .page-header,
-body.dark-mode .profile-card,
+/* ==========================================
+   DARK MODE — GLOBAL WHITE BACKGROUND FIXES
+   Covers all hardcoded background:white usages
+   across pages (JobDetails, DirectMessages,
+   MyApplications, MyJobs, Profile, ServiceDetails,
+   MyBookings, Jobs toolbar select)
+   ========================================== */
 body.dark-mode .job-details-card,
 body.dark-mode .application-card,
 body.dark-mode .notification-card,
@@ -826,7 +794,7 @@ code {
     padding-top: 18px;
 }
 
-.view-button{
+.view-button {
     flex: 1;
     text-align: center;
     padding: 10px 15px;
@@ -997,7 +965,7 @@ code {
 
 .delete-button {
     border: 1px solid #cc3d3d;
-    color:red;
+    color: red;
     background-color: #fefbfb;
     display: inline;
     flex: 1;
@@ -1152,11 +1120,11 @@ body.dark-mode .top-row .user-badge .text-dark {
     color: var(--app-text-primary) !important;
 }
 
-body.dark-mode .user-badge > span {
+body.dark-mode .user-badge>span {
     color: var(--app-text-primary) !important;
 }
 
-body.dark-mode main .top-row a.user-badge > span {
+body.dark-mode main .top-row a.user-badge>span {
     color: #f8fafc !important;
 }
 

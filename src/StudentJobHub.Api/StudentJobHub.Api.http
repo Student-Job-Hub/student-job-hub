@@ -1,6 +1,58 @@
 @StudentJobHub.Api_HostAddress = http://localhost:5205
 
-GET {{StudentJobHub.Api_HostAddress}}/weatherforecast/
+### Auth - Register User
+POST {{StudentJobHub.Api_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "Password123!",
+  "fullName": "Test Student"
+}
+
+### Auth - Login User
+# @name login
+POST {{StudentJobHub.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "Password123!"
+}
+
+### Store Auth Token from response
+@authToken = {{login.response.body.token}}
+
+### Jobs - Get All Jobs
+GET {{StudentJobHub.Api_HostAddress}}/api/jobs
 Accept: application/json
 
-###
+### Jobs - Search Jobs by Query
+GET {{StudentJobHub.Api_HostAddress}}/api/jobs?q=developer
+Accept: application/json
+
+### Jobs - Create New Job
+POST {{StudentJobHub.Api_HostAddress}}/api/jobs
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Blazor Developer Needed",
+  "description": "Looking for a student to help build UI components.",
+  "category": "Programming",
+  "budget": 350.00,
+  "deadline": "2026-10-15T00:00:00Z"
+}
+
+### Jobs - Get Job By ID
+GET {{StudentJobHub.Api_HostAddress}}/api/jobs/1
+Accept: application/json
+
+### Users - Get Current User Profile
+GET {{StudentJobHub.Api_HostAddress}}/api/users/profile
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+### Services - Get Offered Services
+GET {{StudentJobHub.Api_HostAddress}}/api/services
+Accept: application/json

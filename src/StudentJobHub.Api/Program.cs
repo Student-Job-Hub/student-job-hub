@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Configuration.GetConnectionString("DefaultConnection"))
+    .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // ============================================================
 // ASP.NET CORE IDENTITY
@@ -111,6 +112,9 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<EmailNotificationService>();
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<AdminBootstrapService>();
+builder.Services.AddScoped<JobBookmarkService>();
+builder.Services.AddScoped<ServiceBookingService>();
+builder.Services.AddScoped<ExportService>();
 
 // ============================================================
 // CONTROLLERS
