@@ -479,6 +479,9 @@
         catch (Exception ex)
         {
             ToastService.ShowError($"Print error: {ex.Message}");
+        }
+    }
+
     private async Task DownloadResumeAsync(ApplicationModel application)
     {
         try
