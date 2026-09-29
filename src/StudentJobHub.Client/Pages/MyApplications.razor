@@ -20,10 +20,10 @@
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             @if (applications.Count > 0)
             {
-                <button class="details-button" style="background:white; cursor:pointer;" @onclick="ExportCsvAsync" disabled="@isExporting">
+                <button class="details-button" style="cursor:pointer;" @onclick="ExportCsvAsync" disabled="@isExporting">
                     <i class="bi bi-filetype-csv"></i> @(isExporting ? "Exporting..." : "Export CSV")
                 </button>
-                <button class="details-button" style="background:white; cursor:pointer;" @onclick="PrintPdfAsync">
+                <button class="details-button" style="cursor:pointer;" @onclick="PrintPdfAsync">
                     <i class="bi bi-printer"></i> Print / PDF
                 </button>
             }
