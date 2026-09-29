@@ -117,6 +117,51 @@ public class ApiBehaviorTests
     }
 
     [Fact]
+    public async Task AdminBootstrap_CreatesAdminThatCanSignIn_AndIsIdempotent()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDataProtection();
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+        services.AddIdentityCore<ApplicationUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        using var provider = services.BuildServiceProvider();
+        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+        var bootstrap = new AdminBootstrapService(userManager, roleManager);
+        await bootstrap.EnsureAdminAsync("admin@test.com", "AdminPass123!");
+        await bootstrap.EnsureAdminAsync("admin@test.com", "AdminPass123!");
+
+        var user = await userManager.FindByEmailAsync("admin@test.com");
+        Assert.NotNull(user);
+        Assert.True(await userManager.IsInRoleAsync(user!, "Admin"));
+        Assert.Equal(1, await userManager.Users.CountAsync());
+
+        var authService = new AuthService(userManager, new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "StudentJobHub_Test_Key_1234567890_ABCDEFGH1234567890",
+                ["Jwt:Issuer"] = "StudentJobHub",
+                ["Jwt:Audience"] = "StudentJobHubAudience"
+            })
+            .Build());
+        var login = await authService.LoginAsync(new LoginDto
+        {
+            Email = "admin@test.com",
+            Password = "AdminPass123!"
+        });
+
+        Assert.True(login.Success);
+        Assert.False(string.IsNullOrWhiteSpace(login.Token));
+    }
+
+    [Fact]
     public async Task LoginAsync_WithValidCredentials_ReturnsToken()
     {
         var (_, _, authService, _, _, _, _, _) = await CreateServicesAsync();
