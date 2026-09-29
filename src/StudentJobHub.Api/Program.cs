@@ -45,6 +45,24 @@ builder.Services
     {
         options.Events = new JwtBearerEvents
         {
+            OnTokenValidated = async context =>
+            {
+                var userId = context.Principal?.FindFirst(
+                    System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    context.Fail("The token has no user identity.");
+                    return;
+                }
+
+                var userManager = context.HttpContext.RequestServices
+                    .GetRequiredService<UserManager<ApplicationUser>>();
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null || await userManager.IsLockedOutAsync(user))
+                {
+                    context.Fail("The account is suspended or no longer exists.");
+                }
+            },
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query["access_token"];
@@ -91,6 +109,8 @@ builder.Services.AddScoped<JobApplicationService>();
 builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<EmailNotificationService>();
+builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<AdminBootstrapService>();
 
 // ============================================================
 // CONTROLLERS
@@ -163,6 +183,15 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(
                 new IdentityRole(role));
         }
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        var adminBootstrap = scope.ServiceProvider
+            .GetRequiredService<AdminBootstrapService>();
+        await adminBootstrap.EnsureAdminAsync(
+            "eshunjeffrey12@gmail.com",
+            "Admin@123");
     }
 }
 

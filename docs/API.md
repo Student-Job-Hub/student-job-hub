@@ -161,3 +161,19 @@
 
 - `GET /api/users/me`: Authenticated user profile
 - `PUT /api/users/me`: Update FullName, University, Bio, ProfilePictureUrl
+
+---
+
+## 🛡️ 7. Admin Endpoints (`/api/admin`)
+
+All endpoints require a JWT for a user in the `Admin` role.
+
+- `GET /api/admin/overview`: Platform totals, open jobs, suspended users, and new users this month
+- `GET /api/admin/users?search={term}`: List users, roles, join dates, and suspension state; search by name or email
+- `PATCH /api/admin/users/{userId}/suspension`: Set `{ "isSuspended": true }` to suspend or `false` to reactivate; a suspended user cannot log in, refresh tokens, or use existing JWTs
+- `GET /api/admin/jobs`: List job listings and their owners
+- `PATCH /api/admin/jobs/{jobId}/close`: Close an open job listing
+- `GET /api/admin/services`: List service listings and their providers
+- `DELETE /api/admin/services/{serviceId}`: Remove a service listing
+
+In Development, startup provisions a local administrator account without public registration. The development-only email and password are defined in `Program.cs`; this fixed credential must never be used in production or deployed environments.

@@ -225,6 +225,11 @@
                     <i class="bi bi-share"></i> @(shareCopied ? "Link copied!" : "Copy share link")
                 </button>
             </div>
+            <!-- Employer Reviews & Ratings Section -->
+            @if (!string.IsNullOrEmpty(job.PostedById))
+            {
+                <ReviewSection TargetUserId="@job.PostedById" TargetUserName="@job.PostedByName" ContextTitle="Job Poster" />
+            }
 
         </div>
     }

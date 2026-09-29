@@ -128,6 +128,51 @@ public class ApiBehaviorTests
     }
 
     [Fact]
+    public async Task AdminBootstrap_CreatesAdminThatCanSignIn_AndIsIdempotent()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDataProtection();
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
+        services.AddIdentityCore<ApplicationUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+        using var provider = services.BuildServiceProvider();
+        var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+
+        var bootstrap = new AdminBootstrapService(userManager, roleManager);
+        await bootstrap.EnsureAdminAsync("admin@test.com", "AdminPass123!");
+        await bootstrap.EnsureAdminAsync("admin@test.com", "AdminPass123!");
+
+        var user = await userManager.FindByEmailAsync("admin@test.com");
+        Assert.NotNull(user);
+        Assert.True(await userManager.IsInRoleAsync(user!, "Admin"));
+        Assert.Equal(1, await userManager.Users.CountAsync());
+
+        var authService = new AuthService(userManager, new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Key"] = "StudentJobHub_Test_Key_1234567890_ABCDEFGH1234567890",
+                ["Jwt:Issuer"] = "StudentJobHub",
+                ["Jwt:Audience"] = "StudentJobHubAudience"
+            })
+            .Build());
+        var login = await authService.LoginAsync(new LoginDto
+        {
+            Email = "admin@test.com",
+            Password = "AdminPass123!"
+        });
+
+        Assert.True(login.Success);
+        Assert.False(string.IsNullOrWhiteSpace(login.Token));
+    }
+
+    [Fact]
     public async Task LoginAsync_WithValidCredentials_ReturnsToken()
     {
         var (_, _, authService, _, _, _, _, _) = await CreateServicesAsync();
@@ -148,6 +193,75 @@ public class ApiBehaviorTests
 
         Assert.True(result.Success);
         Assert.False(string.IsNullOrWhiteSpace(result.Token));
+    }
+
+    [Fact]
+    public async Task SuspendedUser_CannotLoginOrRefreshUntilReactivated()
+    {
+        var (context, userManager, authService, _, _, _, _, _) = await CreateServicesAsync();
+        var registration = await authService.RegisterAsync(new RegisterDto
+        {
+            FullName = "Member User",
+            Email = "suspended@test.com",
+            Password = "Password123!",
+            Role = "Student"
+        });
+        var user = await userManager.FindByEmailAsync("suspended@test.com");
+        Assert.NotNull(user);
+
+        var adminService = new AdminService(context, userManager);
+        Assert.True(await adminService.SetUserSuspensionAsync(user!.Id, true));
+
+        var login = await authService.LoginAsync(new LoginDto
+        {
+            Email = "suspended@test.com",
+            Password = "Password123!"
+        });
+        var refresh = await authService.RefreshAsync(registration.RefreshToken!);
+
+        Assert.False(login.Success);
+        Assert.False(refresh.Success);
+
+        Assert.True(await adminService.SetUserSuspensionAsync(user.Id, false));
+        var reactivatedLogin = await authService.LoginAsync(new LoginDto
+        {
+            Email = "suspended@test.com",
+            Password = "Password123!"
+        });
+        Assert.True(reactivatedLogin.Success);
+    }
+
+    [Fact]
+    public async Task AdminModeration_ClosesJobsAndRemovesServices()
+    {
+        var (context, userManager, _, _, _, _, _, _) = await CreateServicesAsync();
+        var owner = new ApplicationUser
+        {
+            Id = "moderation-owner",
+            UserName = "owner@test.com",
+            Email = "owner@test.com",
+            FullName = "Listing Owner"
+        };
+        context.Users.Add(owner);
+        var job = new Job
+        {
+            Title = "Moderated job",
+            PostedById = owner.Id
+        };
+        var service = new StudentJobHub.Api.Models.Service
+        {
+            Title = "Moderated service",
+            ProviderId = owner.Id
+        };
+        context.Jobs.Add(job);
+        context.Services.Add(service);
+        await context.SaveChangesAsync();
+
+        var adminService = new AdminService(context, userManager);
+        Assert.True(await adminService.CloseJobAsync(job.Id));
+        Assert.True(await adminService.DeleteServiceAsync(service.Id));
+        Assert.False((await context.Jobs.FindAsync(job.Id))!.IsOpen);
+        Assert.Null(await context.Services.FindAsync(service.Id));
     }
 
     [Fact]
@@ -323,6 +437,56 @@ public class ApiBehaviorTests
 
         Assert.False(result.Success);
         Assert.Equal("You cannot review yourself.", result.Message);
+    }
+
+    [Fact]
+    public async Task ReviewService_CreateAndRetrieve_Succeeds()
+    {
+        var (context, _, _, _, _, _, _, reviewService) = await CreateServicesAsync();
+
+        var reviewer = new ApplicationUser { Id = "rev1", FullName = "Reviewer Person", Email = "rev1@test.com" };
+        var reviewee = new ApplicationUser { Id = "target1", FullName = "Service Provider", Email = "target1@test.com" };
+        context.Users.AddRange(reviewer, reviewee);
+        await context.SaveChangesAsync();
+
+        // 1. Create valid review
+        var result = await reviewService.CreateAsync(new CreateReviewDto
+        {
+            RevieweeId = reviewee.Id,
+            Rating = 5,
+            Comment = "Excellent web development service, highly recommended!"
+        }, reviewer.Id);
+
+        Assert.True(result.Success);
+        Assert.NotNull(result.Review);
+        Assert.Equal(5, result.Review!.Rating);
+        Assert.Equal("Reviewer Person", result.Review.ReviewerName);
+
+        // 2. Prevent duplicate review
+        var dupResult = await reviewService.CreateAsync(new CreateReviewDto
+        {
+            RevieweeId = reviewee.Id,
+            Rating = 4,
+            Comment = "Duplicate review attempt"
+        }, reviewer.Id);
+
+        Assert.False(dupResult.Success);
+        Assert.Equal("You have already reviewed this user.", dupResult.Message);
+
+        // 3. Get user reviews
+        var userReviews = await reviewService.GetUserReviewsAsync(reviewee.Id);
+        Assert.Single(userReviews);
+        Assert.Equal("Excellent web development service, highly recommended!", userReviews[0].Comment);
+
+        // 4. Delete review authorization check
+        var nonAuthorDelete = await reviewService.DeleteAsync(result.Review.Id, "intruder_id");
+        Assert.False(nonAuthorDelete);
+
+        var authorDelete = await reviewService.DeleteAsync(result.Review.Id, reviewer.Id);
+        Assert.True(authorDelete);
+
+        var afterDeleteReviews = await reviewService.GetUserReviewsAsync(reviewee.Id);
+        Assert.Empty(afterDeleteReviews);
     }
 }
 
