@@ -1,6 +1,8 @@
 @page "/my-applications"
 
 @inject ApplicationApiService ApplicationService
+@inject ExportApiService ExportService
+@inject ToastService ToastService
 @inject IJSRuntime JSRuntime
 
 <PageTitle>My Applications - Student Job Hub</PageTitle>
@@ -15,9 +17,20 @@
             <p>Track the jobs you have applied for.</p>
         </div>
 
-        <a href="/jobs" class="browse-button">
-            Browse Jobs
-        </a>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            @if (applications.Count > 0)
+            {
+                <button class="details-button" style="background:white; cursor:pointer;" @onclick="ExportCsvAsync" disabled="@isExporting">
+                    <i class="bi bi-filetype-csv"></i> @(isExporting ? "Exporting..." : "Export CSV")
+                </button>
+                <button class="details-button" style="background:white; cursor:pointer;" @onclick="PrintPdfAsync">
+                    <i class="bi bi-printer"></i> Print / PDF
+                </button>
+            }
+            <a href="/jobs" class="browse-button">
+                Browse Jobs
+            </a>
+        </div>
     </div>
 
     @if (isLoading)
@@ -102,17 +115,17 @@
 
                     <div class="application-footer">
 
-                        <a href="/jobs/@application.JobId" class="details-button">
+                        <a
+                            href="/jobs/@application.JobId"
+                            class="details-button">
                             View Job
-                        </a>
-
-                        <a href="/messages/@application.Id" class="details-button message-button">
-                            Message poster
                         </a>
 
                         @if (IsPending(application.Status))
                         {
-                            <button class="withdraw-button" @onclick="() => WithdrawApplication(application.Id)">
+                            <button
+                                class="withdraw-button"
+                                @onclick="() => WithdrawApplication(application.Id)">
                                 Withdraw Application
                             </button>
                         }
@@ -128,6 +141,7 @@
 </div>
 
 <style>
+
     .applications-page {
         max-width: 1100px;
         margin: 0 auto;
@@ -162,7 +176,7 @@
     }
 
     .browse-button {
-        background: #2563eb;
+        background:  #2563eb;
         color: white;
     }
 
@@ -170,11 +184,6 @@
         border: 1px solid ##576a91ff;
         color: #0953c9ff;
         text-decoration: underline;
-    }
-
-    .message-button {
-        border-color: #087e78;
-        color: #087e78;
     }
 
     .applications-summary {
@@ -359,7 +368,6 @@
 
         .browse-button,
         .details-button,
-        .message-button,
         .withdraw-button {
             text-align: center;
             width: 100%;
@@ -369,6 +377,7 @@
             align-self: flex-start;
         }
     }
+
 </style>
 
 @code {
@@ -439,6 +448,37 @@
         }
     }
 
+    private bool isExporting = false;
+
+    private async Task ExportCsvAsync()
+    {
+        isExporting = true;
+        try
+        {
+            var ok = await ExportService.DownloadApplicationsCsvAsync();
+            if (ok) ToastService.ShowSuccess("Applications history CSV downloaded!");
+            else ToastService.ShowError("Could not download applications CSV.");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Export error: {ex.Message}");
+        }
+        finally
+        {
+            isExporting = false;
+        }
+    }
+
+    private async Task PrintPdfAsync()
+    {
+        try
+        {
+            await ExportService.OpenPrintReportAsync();
+            ToastService.ShowSuccess("Printable report opened!");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Print error: {ex.Message}");
     private async Task DownloadResumeAsync(ApplicationModel application)
     {
         try
