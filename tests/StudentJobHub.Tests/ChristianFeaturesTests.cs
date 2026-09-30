@@ -59,7 +59,8 @@ public class ChristianFeaturesTests
         var bookmarkService = new JobBookmarkService(context);
         var bookingService = new ServiceBookingService(context, notificationService, testHub);
         var exportService = new ExportService(context);
-        var jobService = new JobService(context);
+        var auditLogService = new AuditLogService(context);
+        var jobService = new JobService(context, auditLogService);
         var serviceService = new ServiceService(context);
 
         return (context, bookmarkService, bookingService, exportService, jobService, serviceService, user1, user2);

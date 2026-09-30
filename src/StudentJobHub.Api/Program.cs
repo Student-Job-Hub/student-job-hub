@@ -115,6 +115,7 @@ builder.Services.AddScoped<AdminBootstrapService>();
 builder.Services.AddScoped<JobBookmarkService>();
 builder.Services.AddScoped<ServiceBookingService>();
 builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<AuditLogService>();
 
 // ============================================================
 // CONTROLLERS

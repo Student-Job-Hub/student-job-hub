@@ -23,6 +23,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Notification> Notifications => Set<Notification>();
 
     public DbSet<DirectMessage> DirectMessages => Set<DirectMessage>();
+    
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     public DbSet<JobBookmark> JobBookmarks => Set<JobBookmark>();
 
@@ -113,6 +115,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(message => message.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
+
+                    // ==========================================
+        // AUDIT LOG
+        // ==========================================
+        
+        builder.Entity<AuditLog>()
+            .HasOne(log => log.User)
+            .WithMany()
+            .HasForeignKey(log => log.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // ==========================================
         // JOB BOOKMARK
