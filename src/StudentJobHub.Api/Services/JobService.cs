@@ -8,10 +8,12 @@ namespace StudentJobHub.Api.Services;
 public class JobService
 {
     private readonly ApplicationDbContext _context;
+    private readonly AuditLogService _auditLogService;
 
-    public JobService(ApplicationDbContext context)
+    public JobService(ApplicationDbContext context, AuditLogService auditLogService)
     {
         _context = context;
+        _auditLogService = auditLogService;
     }
 
     public async Task<JobResponseDto> CreateAsync(
@@ -140,10 +142,10 @@ public class JobService
         await _context.SaveChangesAsync();
         await _auditLogService.LogAsync(
             postedById,
-            "CREATE",
+            "DELETE",
             "Job",
             job.Id.ToString(),
-            $"Created job '{job.Title}'.");
+            $"Deleted job '{job.Title}'.");
         return true;
     }
 
@@ -166,10 +168,10 @@ public class JobService
         await _context.SaveChangesAsync();
         await _auditLogService.LogAsync(
             postedById,
-            "CREATE",
+            "UPDATE",
             "Job",
             job.Id.ToString(),
-            $"Created job '{job.Title}'.");
+            $"Closed job '{job.Title}'.");
         return true;
     }
 
