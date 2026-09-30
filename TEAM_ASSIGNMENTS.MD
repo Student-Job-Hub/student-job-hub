@@ -33,6 +33,11 @@ Here are feature assignments and development workflow guidelines for the team.
 ### 6. Amos Fiifi Addo(`afaddo1`)
 * **Feature #31: implement settings menu** - implement settings menu for the app, including notifications, preferences, app and privacy settings(Just minimal-no need to over do it!)
 * **Feature #32: implement reviews and ratings** - implement reviews and ratings for both jobs and services
+
+### 7. SUN123-wrld (`SUN123-wrld`)
+* **Feature #33: Profile Pictures on Cards** — Update job, saved job, and service detail cards to display the user's uploaded profile picture instead of generic initials (fallback to initials if no picture exists).
+* **Feature #34: Email Verification** — Send verification email on registration before allowing full access.
+* **Feature #35: Forgot Password / Reset** — Standard password reset flow with email link.
 ---
 
 ## Team Development & Workflow Guidelines
