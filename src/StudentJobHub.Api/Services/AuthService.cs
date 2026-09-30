@@ -66,6 +66,13 @@ public class AuthService
 
         var tokens = await IssueTokensAsync(user);
 
+            await _auditLogService.LogAsync(
+        user.Id,
+        "LOGIN",
+        "Authentication",
+        user.Id,
+        "User logged in successfully.");
+
         return (true, "Registration successful.", tokens.Token, tokens.RefreshToken);
     }
 
