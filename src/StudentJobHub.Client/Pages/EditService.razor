@@ -44,10 +44,10 @@
 			{
 				<p class="error-message">@saveError</p>
 			}
-			<button type="submit" class="primary-button" disabled="@isSaving">
+			<button type="submit" class="secondary-button" disabled="@isSaving">
 				@(isSaving ? "Saving..." : "Save Changes")
 			</button>
-			<a href="/services" class="secondary-button">Cancel</a>
+			<a href="/services" class="cancel-button">Cancel</a>
 		</EditForm>
 	}
 </div>

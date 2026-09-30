@@ -195,8 +195,8 @@ using (var scope = app.Services.CreateScope())
         var adminBootstrap = scope.ServiceProvider
             .GetRequiredService<AdminBootstrapService>();
         await adminBootstrap.EnsureAdminAsync(
-            "eshunjeffrey12@gmail.com",
-            "Admin@123");
+            "michaelobiri@gmail.com",
+            "michael123@Admin");
     }
 }
 
