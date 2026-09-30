@@ -54,9 +54,10 @@ public class ApiBehaviorTests
             ["Jwt:Audience"] = "StudentJobHubAudience"
         }).Build();
 
-        var authService = new AuthService(userManager, config);
+        var auditLogService = new AuditLogService(context);
+        var authService = new AuthService(userManager, config, auditLogService);
 
-        var jobService = new JobService(context);
+        var jobService = new JobService(context, auditLogService);
         var notificationService = new NotificationService(context);
 
         var testHubContext = new TestHubContext();
@@ -161,7 +162,7 @@ public class ApiBehaviorTests
                 ["Jwt:Issuer"] = "StudentJobHub",
                 ["Jwt:Audience"] = "StudentJobHubAudience"
             })
-            .Build());
+            .Build(), new AuditLogService(provider.GetRequiredService<ApplicationDbContext>()));
         var login = await authService.LoginAsync(new LoginDto
         {
             Email = "admin@test.com",
