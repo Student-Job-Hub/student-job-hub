@@ -14,13 +14,16 @@ public class AuthService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly AuditLogService _auditLogService;
 
     public AuthService(
         UserManager<ApplicationUser> userManager,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        AuditLogService auditLogService)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _auditLogService = auditLogService;
     }
 
     public async Task<(bool Success, string Message, string? Token, string? RefreshToken)> RegisterAsync(
@@ -66,12 +69,12 @@ public class AuthService
 
         var tokens = await IssueTokensAsync(user);
 
-            await _auditLogService.LogAsync(
-        user.Id,
-        "LOGIN",
-        "Authentication",
-        user.Id,
-        "User logged in successfully.");
+        await _auditLogService.LogAsync(
+            user.Id,
+            "REGISTER",
+            "Authentication",
+            user.Id,
+            "User registered successfully.");
 
         return (true, "Registration successful.", tokens.Token, tokens.RefreshToken);
     }
@@ -101,6 +104,13 @@ public class AuthService
         }
 
         var tokens = await IssueTokensAsync(user);
+
+        await _auditLogService.LogAsync(
+            user.Id,
+            "LOGIN",
+            "Authentication",
+            user.Id,
+            "User logged in successfully.");
 
         return (true, "Login successful.", tokens.Token, tokens.RefreshToken);
     }
