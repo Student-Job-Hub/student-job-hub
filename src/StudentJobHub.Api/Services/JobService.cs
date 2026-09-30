@@ -138,7 +138,12 @@ public class JobService
 
         _context.Jobs.Remove(job);
         await _context.SaveChangesAsync();
-
+        await _auditLogService.LogAsync(
+            postedById,
+            "CREATE",
+            "Job",
+            job.Id.ToString(),
+            $"Created job '{job.Title}'.");
         return true;
     }
 
@@ -159,7 +164,12 @@ public class JobService
         job.IsOpen = false;
 
         await _context.SaveChangesAsync();
-
+        await _auditLogService.LogAsync(
+            postedById,
+            "CREATE",
+            "Job",
+            job.Id.ToString(),
+            $"Created job '{job.Title}'.");
         return true;
     }
 
