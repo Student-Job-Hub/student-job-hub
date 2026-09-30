@@ -6,8 +6,6 @@ using StudentJobHub.Api.Data;
 
 namespace StudentJobHub.Api.Migrations;
 
-[DbContext(typeof(ApplicationDbContext))]
-[Migration("20260929000000_AddAuditLogs")]
 public partial class AddAuditLogs : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
