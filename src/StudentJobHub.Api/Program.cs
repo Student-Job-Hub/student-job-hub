@@ -1,5 +1,7 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -97,7 +99,38 @@ builder.Services
 // AUTHORIZATION
 // ============================================================
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+// ============================================================
+// RATE LIMITING
+// ============================================================
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            message = "Too many requests. Please try again later."
+        }, cancellationToken);
+    };
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        CreateIpPartition(context, permitLimit: 120, window: TimeSpan.FromMinutes(1)));
+
+    options.AddPolicy("login", context =>
+        CreateIpPartition(context, permitLimit: 5, window: TimeSpan.FromMinutes(1)));
+    options.AddPolicy("register", context =>
+        CreateIpPartition(context, permitLimit: 10, window: TimeSpan.FromMinutes(1)));
+    options.AddPolicy("refresh", context =>
+        CreateIpPartition(context, permitLimit: 30, window: TimeSpan.FromMinutes(1)));
+});
 
 // ============================================================
 // APPLICATION SERVICES
@@ -206,7 +239,7 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
 
 if (!app.Environment.IsDevelopment())
@@ -216,7 +249,11 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
+app.UseRouting();
+
 app.UseCors("ClientPolicy");
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 
@@ -231,3 +268,19 @@ app.MapHub<StudentJobHub.Api.Hubs.DirectMessageHub>(
     "/hubs/messages");
 
 app.Run();
+
+static RateLimitPartition<string> CreateIpPartition(
+    HttpContext context,
+    int permitLimit,
+    TimeSpan window)
+{
+    var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = permitLimit,
+        Window = window,
+        QueueLimit = 0,
+        AutoReplenishment = true
+    });
+}
