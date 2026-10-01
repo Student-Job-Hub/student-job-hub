@@ -26,7 +26,7 @@
                 <h1>Admin console</h1>
                 <p>Platform health, member access, and marketplace moderation.</p>
             </div>
-            <button class="refresh-button" @onclick="LoadAsync" disabled="isLoading" title="Refresh dashboard">
+            <button class="refresh-button" @onclick="LoadAsync" disabled="@isLoading" title="Refresh dashboard">
                 <i class="bi bi-arrow-clockwise"></i><span>Refresh</span>
             </button>
         </header>
@@ -202,7 +202,7 @@
     .admin-header h1 { font-size: 2rem; margin: 7px 0 4px; font-weight: 750; }
     .admin-header p { color: var(--muted); margin: 0; }
     .eyebrow { color: #557364; font-size: .7rem; font-weight: 800; letter-spacing: .08em; }
-    .refresh-button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: white; padding: 9px 13px; border-radius: 5px; color: var(--ink); }
+    .refresh-button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--ink); padding: 9px 13px; border-radius: 5px; color: white; }
     .refresh-button:disabled { opacity: .55; }
     .metrics-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 30px; }
     .metric { min-height: 132px; padding: 17px 18px; border: 1px solid var(--line); border-top: 3px solid #43836d; background: white; display: flex; flex-direction: column; align-items: flex-start; }
