@@ -59,6 +59,11 @@ public class JobService
                 PostedByName = j.PostedBy != null
                     ? j.PostedBy.FullName
                     : string.Empty,
+               
+                ProfilePictureUrl = j.PostedBy != null
+                     ? j.PostedBy.ProfilePictureUrl
+                    : null,    
+               
                 IsOpen = j.IsOpen,
                 CreatedAt = j.CreatedAt
             })
@@ -86,7 +91,13 @@ public class JobService
                 PostedByName = j.PostedBy != null
                     ? j.PostedBy.FullName
                     : string.Empty,
+
+                ProfilePictureUrl = j.PostedBy != null
+                     ? j.PostedBy.ProfilePictureUrl
+                    : null,    
+               
                 IsOpen = j.IsOpen,
+        
                 CreatedAt = j.CreatedAt
             })
             .ToListAsync();
@@ -193,6 +204,10 @@ public class JobService
                 PostedByName = j.PostedBy != null
                     ? j.PostedBy.FullName
                     : string.Empty,
+                    
+                ProfilePictureUrl = j.PostedBy != null
+                     ? j.PostedBy.ProfilePictureUrl
+                     : null,
                 IsOpen = j.IsOpen,
                 CreatedAt = j.CreatedAt
             })

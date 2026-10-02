@@ -20,6 +20,8 @@ public class JobResponseDto
 
     public string PostedByName { get; set; } = string.Empty;
 
+    public string? ProfilePictureUrl { get; set; }
+
     public bool IsOpen { get; set; }
 
     public DateTime CreatedAt { get; set; }

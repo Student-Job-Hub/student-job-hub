@@ -1,0 +1,10 @@
+{
+  "buildCommand": "bash scripts/vercel-build.sh",
+  "outputDirectory": "artifacts/vercel-client/wwwroot",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
