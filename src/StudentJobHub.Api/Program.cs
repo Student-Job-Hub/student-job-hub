@@ -239,6 +239,19 @@ using (var scope = app.Services.CreateScope())
             "michaelobiri@gmail.com",
             "michael123@Admin");
     }
+    else
+    {
+        var adminEmail = builder.Configuration["AdminBootstrap:Email"];
+        var adminPassword = builder.Configuration["AdminBootstrap:Password"];
+
+        if (!string.IsNullOrWhiteSpace(adminEmail) ||
+            !string.IsNullOrWhiteSpace(adminPassword))
+        {
+            var adminBootstrap = scope.ServiceProvider
+                .GetRequiredService<AdminBootstrapService>();
+            await adminBootstrap.EnsureAdminAsync(adminEmail, adminPassword);
+        }
+    }
 }
 
 // ============================================================
