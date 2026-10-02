@@ -11,15 +11,23 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddMudServices();
 
-var apiBaseUrl = "http://localhost:5205/";
-builder.Services.AddSingleton(new SiteOptions(apiBaseUrl));
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"];
+if (!Uri.TryCreate(apiBaseUrl, UriKind.Absolute, out var apiBaseUri) ||
+    (!builder.HostEnvironment.IsDevelopment() && apiBaseUri.Scheme != Uri.UriSchemeHttps))
+{
+    throw new InvalidOperationException(
+        "ApiBaseUrl must be an absolute URL; production URLs must use HTTPS.");
+}
+
+var apiBaseAddress = apiBaseUri.ToString();
+builder.Services.AddSingleton(new SiteOptions(apiBaseAddress));
 
 // Authentication service
 builder.Services.AddScoped<AuthService>(sp =>
     new AuthService(
         new HttpClient
         {
-            BaseAddress = new Uri(apiBaseUrl)
+            BaseAddress = apiBaseUri
         },
         sp.GetRequiredService<Microsoft.JSInterop.IJSRuntime>()));
 
@@ -29,7 +37,7 @@ builder.Services.AddScoped<JwtAuthorizationHandler>();
 // Authorized API client
 builder.Services.AddHttpClient("AuthorizedClient", client =>
 {
-    client.BaseAddress = new Uri(apiBaseUrl);
+    client.BaseAddress = apiBaseUri;
 })
 .AddHttpMessageHandler<JwtAuthorizationHandler>();
 
