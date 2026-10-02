@@ -13,7 +13,7 @@
          Description="Browse and apply for student jobs posted by businesses, lecturers, and fellow students. Find part-time work, freelance gigs, and campus opportunities."
          UrlPath="jobs" />
 
-<div class="jobs-page">
+<div class="jobs-page"></div>
 
     <div class="jobs-header">
         <div>
@@ -177,25 +177,30 @@
                         <div class="job-footer">
 
                             <div class="posted-by">
-                                <span class="avatar">
-                                    @(string.IsNullOrWhiteSpace(job.PostedByName)
-                                        ? "?"
-                                        : job.PostedByName.Substring(0, 1).ToUpper())
-                                </span>
+    @if (!string.IsNullOrWhiteSpace(job.ProfilePictureUrl))
+    {
+        <img src="@job.ProfilePictureUrl"
+             alt="@job.PostedByName"
+             class="avatar profile-avatar" />
+    }
+    else
+    {
+        <span class="avatar">
+            @(string.IsNullOrWhiteSpace(job.PostedByName)
+                ? "?"
+                : job.PostedByName.Substring(0, 1).ToUpper())
+        </span>
+    }
 
-                                <div>
-                                    <small>Posted by</small>
-                                    <strong>@job.PostedByName</strong>
-                                </div>
-                            </div>
+    <div>
+        <small>Posted by</small>
+        <strong>@job.PostedByName</strong>
+    </div>
+</div>
 
-                            <a href="/jobs/@job.Id"
-                               class="view-button">
-                                View Job
-                            </a>
-                           
-
-                        </div>
+<a href="/jobs/@job.Id" class="view-button">
+    View Job
+</a>
 
                     </div>
 
@@ -303,7 +308,7 @@
     }
 
     .job-icon i {
-        color: color.default;
+        color:#2563eb;
         
     }
 
@@ -409,7 +414,11 @@
         background: #2563eb;
         color: white;
         border-radius: 50%;
-        font-weight: 600;
+        font-weight: 600;  
+    }
+
+   .profile-avatar {
+    object-fit: cover;
     }
 
     .view-button {
@@ -669,4 +678,5 @@
             }
         }
     }
+}   
 }
