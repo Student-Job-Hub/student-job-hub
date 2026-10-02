@@ -18,3 +18,7 @@ services:
         sync: false
       - key: Client__BaseUrl
         sync: false
+      - key: AdminBootstrap__Email
+        sync: false
+      - key: AdminBootstrap__Password
+        sync: false
