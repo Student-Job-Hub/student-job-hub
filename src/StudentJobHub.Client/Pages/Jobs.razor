@@ -13,7 +13,7 @@
          Description="Browse and apply for student jobs posted by businesses, lecturers, and fellow students. Find part-time work, freelance gigs, and campus opportunities."
          UrlPath="jobs" />
 
-<div class="jobs-page"></div>
+<div class="jobs-page">
 
     <div class="jobs-header">
         <div>
@@ -78,14 +78,15 @@
                 <strong>@FilteredJobs.Count()</strong> job@(FilteredJobs.Count() == 1 ? "" : "s") available
             </span>
 
-            <div style="display:flex; gap:10px; align-items:center;">
+                 <div class="jobs-filter-controls">
                 <input type="text" 
+                      class="job-search-input"
                        placeholder="Search jobs..." 
                        @bind="searchTerm" 
                        @bind:event="oninput" 
                        style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;" />
 
-                <select @bind="selectedCategory" style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;">
+                  <select class="job-filter-select" @bind="selectedCategory">
                     <option value="All">All Categories</option>
                     @foreach (var cat in Categories)
                     {
@@ -93,7 +94,7 @@
                     }
                 </select>
 
-                <select @bind="selectedFilter" style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem;">
+                <select class="job-filter-select" @bind="selectedFilter">
                     <option value="All">All Jobs</option>
                     <option value="Open">Open Jobs</option>
                     <option value="Closed">Closed Jobs</option>
@@ -204,6 +205,7 @@
 
                     </div>
 
+                </div>
                 </div>
             }
 

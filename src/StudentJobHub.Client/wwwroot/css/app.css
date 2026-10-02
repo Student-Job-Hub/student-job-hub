@@ -935,10 +935,13 @@ code {
 
 .password-field {
     position: relative;
+    width: 100%;
 }
 
 .password-field .form-control {
     padding-right: 44px;
+    width: 100%;
+    min-width: 0;
 }
 
 .password-toggle {
@@ -963,6 +966,148 @@ code {
 
 body.dark-mode .password-toggle {
     color: #cbd5e1;
+}
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: clamp(20px, 5vw, 56px) 16px;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    width: min(100%, 460px);
+    padding: clamp(22px, 5vw, 36px);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+}
+
+.auth-card .form-group,
+.auth-card .form-control {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.auth-card .secondary-button {
+    width: 100%;
+    min-height: 46px;
+}
+
+.jobs-page {
+    width: min(100%, 1200px);
+    padding: 32px 24px;
+    box-sizing: border-box;
+}
+
+.jobs-filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.job-search-input {
+    min-width: 0;
+}
+
+.job-filter-select {
+    min-width: 0;
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+}
+
+body.dark-mode .auth-card {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+@media (max-width: 700px) {
+    .auth-page {
+        align-items: flex-start;
+        padding: 20px 12px;
+    }
+
+    .auth-card {
+        padding: 22px 18px;
+    }
+
+    .auth-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .jobs-page {
+        padding: 22px 14px;
+    }
+
+    .jobs-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .jobs-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .jobs-header > div:last-child {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .jobs-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .jobs-filter-controls {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .job-search-input,
+    .job-filter-select {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    .jobs-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .job-card-header {
+        flex-wrap: wrap;
+    }
+
+    .job-card-header > div:last-child {
+        flex-wrap: wrap;
+    }
+
+    .job-content {
+        padding: 16px;
+    }
+
+    .job-info {
+        gap: 12px;
+    }
+
+    .job-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .job-footer .view-button {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
 }
 
 .form-row {
