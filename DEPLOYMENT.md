@@ -18,7 +18,7 @@ Create a Render Blueprint from this repository and use `render.yaml`. Supply the
 
 Render generates `Jwt__Key`. Keep it in Render's environment settings and do not reuse the development key. The service exposes `/health` for Render's health check.
 
-The Blueprint enables ASP.NET Core forwarded headers so HTTPS redirection recognizes the original HTTPS request after Render's proxy terminates TLS.
+The Blueprint enables ASP.NET Core forwarded headers so HTTPS redirection recognizes the original HTTPS request after Render's proxy terminates TLS. For the first production admin, set `AdminBootstrap__Email` and `AdminBootstrap__Password` in the Render service environment. Use a new, dedicated admin email and a strong password stored only in Render. On startup, the API creates that account and assigns the Admin role. These variables are optional and should be removed after the account has been created; restarts do not change an existing account's password.
 
 ## 3. Deploy the client to Vercel
 
@@ -30,4 +30,4 @@ The build script installs the .NET 10 SDK when needed, publishes the client, and
 
 Confirm Render reports `/health` as healthy, then open the Vercel deployment and test registration, login, browsing jobs and services, applications, bookings, uploads, notifications, exports, and admin permissions. Check browser network errors and Render logs. Verify CORS uses the exact Vercel origin and that production API traffic is HTTPS.
 
-Before public launch, document how the first production Admin account will be created. The current automatic admin bootstrap is Development-only.
+If an existing account is being promoted to Admin, use that account's current password after bootstrap assigns the role. The bootstrap does not reset passwords.
