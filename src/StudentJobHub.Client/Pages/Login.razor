@@ -26,11 +26,7 @@
             <div class="form-group">
                 <label for="email">Email</label>
 
-                <InputText
-                    id="email"
-                    class="form-control"
-                    @bind-Value="model.Email"
-                    placeholder="Enter your email" />
+                <InputText id="email" class="form-control" @bind-Value="model.Email" placeholder="Enter your email" />
 
                 <ValidationMessage For="@(() => model.Email)" />
             </div>
@@ -38,12 +34,17 @@
             <div class="form-group">
                 <label for="password">Password</label>
 
-                <InputText
-                    id="password"
-                    type="password"
-                    class="form-control"
-                    @bind-Value="model.Password"
-                    placeholder="Enter your password" />
+                <div class="password-field">
+                    <InputText id="password" type="@(isPasswordVisible ? "text" : "password")" class="form-control"
+                               @bind-Value="model.Password" placeholder="Enter your password" />
+                    <button type="button" class="password-toggle"
+                            aria-label="@(isPasswordVisible ? "Hide password" : "Show password")"
+                            aria-pressed="@isPasswordVisible"
+                            title="@(isPasswordVisible ? "Hide password" : "Show password")"
+                            @onclick="TogglePasswordVisibility">
+                        <i class="bi @(isPasswordVisible ? "bi-eye-slash" : "bi-eye")" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 <ValidationMessage For="@(() => model.Password)" />
             </div>
@@ -55,12 +56,7 @@
                 </div>
             }
 
-            <button
-                type="submit"
-                class="secondary-button"
-                disabled="@isLoading"
-                style="font-size: 16px;"
-                >
+            <button type="submit" class="secondary-button" disabled="@isLoading" style="font-size: 16px;">
 
                 @(isLoading ? "Logging in..." : "Login")
             </button>
@@ -69,7 +65,8 @@
         <div class="auth-footer">
             <p style="font-size: 16px;">
                 Don't have an account?
-                <a href="/register" style="color: #2563eb; text-decoration: underline; font-size: 16px; font-weight: bold;">Sign up</a>
+                <a href="/register"
+                   style="color: #2563eb; text-decoration: underline; font-size: 16px; font-weight: bold;">Sign up</a>
             </p>
         </div>
 
@@ -88,7 +85,11 @@
     private LoginModel model = new();
 
     private bool isLoading;
+    private bool isPasswordVisible;
     private string? errorMessage;
+
+    private void TogglePasswordVisibility() =>
+        isPasswordVisible = !isPasswordVisible;
 
     private async Task HandleLogin()
     {

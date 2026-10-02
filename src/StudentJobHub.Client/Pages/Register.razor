@@ -22,11 +22,8 @@
             <div class="form-group">
                 <label for="fullName">Full Name</label>
 
-                <InputText
-                    id="fullName"
-                    class="form-control"
-                    @bind-Value="model.FullName"
-                    placeholder="Enter your full name" />
+                <InputText id="fullName" class="form-control" @bind-Value="model.FullName"
+                           placeholder="Enter your full name" />
 
                 <ValidationMessage For="@(() => model.FullName)" />
             </div>
@@ -34,11 +31,7 @@
             <div class="form-group">
                 <label for="email">Email</label>
 
-                <InputText
-                    id="email"
-                    class="form-control"
-                    @bind-Value="model.Email"
-                    placeholder="Enter your email" />
+                <InputText id="email" class="form-control" @bind-Value="model.Email" placeholder="Enter your email" />
 
                 <ValidationMessage For="@(() => model.Email)" />
             </div>
@@ -46,11 +39,8 @@
             <div class="form-group">
                 <label for="phoneNumber">Phone Number</label>
 
-                <InputText
-                    id="phoneNumber"
-                    class="form-control"
-                    @bind-Value="model.PhoneNumber"
-                    placeholder="Enter your phone number" />
+                <InputText id="phoneNumber" class="form-control" @bind-Value="model.PhoneNumber"
+                           placeholder="Enter your phone number" />
 
                 <ValidationMessage For="@(() => model.PhoneNumber)" />
             </div>
@@ -58,12 +48,17 @@
             <div class="form-group">
                 <label for="password">Password</label>
 
-                <InputText
-                    id="password"
-                    type="password"
-                    class="form-control"
-                    @bind-Value="model.Password"
-                    placeholder="Create a password" />
+                <div class="password-field">
+                    <InputText id="password" type="@(isPasswordVisible ? "text" : "password")" class="form-control"
+                               @bind-Value="model.Password" placeholder="Create a password" />
+                    <button type="button" class="password-toggle"
+                            aria-label="@(isPasswordVisible ? "Hide password" : "Show password")"
+                            aria-pressed="@isPasswordVisible"
+                            title="@(isPasswordVisible ? "Hide password" : "Show password")"
+                            @onclick="TogglePasswordVisibility">
+                        <i class="bi @(isPasswordVisible ? "bi-eye-slash" : "bi-eye")" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 <ValidationMessage For="@(() => model.Password)" />
             </div>
@@ -71,101 +66,102 @@
             <div class="form-group">
                 <label for="confirmPassword">Confirm Password</label>
 
-                <InputText
-                    id="confirmPassword"
-                    type="password"
-                    class="form-control"
-                    @bind-Value="model.ConfirmPassword"
-                    placeholder="Confirm your password" />
+                <div class="password-field">
+                    <InputText id="confirmPassword" type="@(isConfirmPasswordVisible ? "text" : "password")"
+                               class="form-control" @bind-Value="model.ConfirmPassword" placeholder="Confirm your password" />
+                    <button type="button" class="password-toggle"
+                            aria-label="@(isConfirmPasswordVisible ? "Hide confirmation password" : "Show confirmation password")"
+                            aria-pressed="@isConfirmPasswordVisible"
+                            title="@(isConfirmPasswordVisible ? "Hide confirmation password" : "Show confirmation password")"
+                            @onclick="ToggleConfirmPasswordVisibility">
+                        <i class="bi @(isConfirmPasswordVisible ? "bi-eye-slash" : "bi-eye")" aria-hidden="true"></i>
+                    </button>
+                </div>
 
                 <ValidationMessage For="@(() => model.ConfirmPassword)" />
             </div>
-           <!-- a drop down of list to select a universirty from in Ghana -->
-           <div class="form-group">
-               <label for="university">University</label>
+            <!-- a drop down of list to select a universirty from in Ghana -->
+            <div class="form-group">
+                <label for="university">University</label>
 
-               <InputSelect
-                   id="university"
-                   class="form-control"
-                   @bind-Value="model.University">
+                <InputSelect id="university" class="form-control" @bind-Value="model.University">
 
-                   <option value="">Select a university</option>
-                   <option value="University of Ghana">University of Ghana</option>
-                   <option value="Kwame Nkrumah University of Science and Technology">Kwame Nkrumah University of Science and Technology</option>
-                   <option value="University of Cape Coast">University of Cape Coast</option>
-                   <option value="University of Education, Winneba">University of Education, Winneba</option>
-                   <option value="University of Professional Studies, Accra">University of Professional Studies, Accra</option>
-                   <option value="GIMPA">GIMPA</option>
-                   <option value="Other">Other</option>
-               </InputSelect>
-           </div>
+                    <option value="">Select a university</option>
+                    <option value="University of Ghana">University of Ghana</option>
+                    <option value="Kwame Nkrumah University of Science and Technology">Kwame Nkrumah University of
+                        Science and Technology</option>
+                        <option value="University of Cape Coast">University of Cape Coast</option>
+                        <option value="University of Education, Winneba">University of Education, Winneba</option>
+                        <option value="University of Professional Studies, Accra">University of Professional Studies, Accra
+                        </option>
+                        <option value="GIMPA">GIMPA</option>
+                        <option value="Other">Other</option>
+                    </InputSelect>
+                </div>
            
 
-            <div class="form-group">
-                <label for="role">Account Type</label>
+                <div class="form-group">
+                    <label for="role">Account Type</label>
 
-                <InputSelect
-                    id="role"
-                    class="form-control"
-                    @bind-Value="model.Role">
+                    <InputSelect id="role" class="form-control" @bind-Value="model.Role">
 
-                    <option value="Student">Student</option>
-                    <option value="Business">Business</option>
-                    <option value="Lecturer">Lecturer</option>
-                </InputSelect>
+                        <option value="Student">Student</option>
+                        <option value="Business">Business</option>
+                        <option value="Lecturer">Lecturer</option>
+                    </InputSelect>
+                </div>
+
+                <!-- adding an optional profile picture upload field -->
+                <div class="form-group">
+                    <label for="ProfilePictureUrl">Profile Picture</label>
+
+                    <InputFile id="ProfilePictureUrl" class="form-control" @bind-Value="model.ProfilePictureUrl" />
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    <div class="alert alert-danger">
+                        @errorMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(successMessage))
+                {
+                    <div class="alert alert-success">
+                        @successMessage
+                    </div>
+                }
+
+                <button type="submit" class="secondary-button" disabled="@isLoading" style="font-size: 16px;">
+
+                    @(isLoading ? "Creating Account..." : "Submit")
+                </button>
+            </EditForm>
+
+            <div class="auth-footer">
+                <p style="font-size: 16px;">
+                    Already have an account?
+                    <a href="/login" style="color: #2563eb; text-decoration: underline; font-weight: bold;">Sign in</a>
+                </p>
             </div>
 
-            <!-- adding an optional profile picture upload field -->
-            <div class="form-group">
-                <label for="ProfilePictureUrl">Profile Picture</label>
-
-                <InputFile
-                    id="ProfilePictureUrl"
-                    class="form-control"
-                    @bind-Value="model.ProfilePictureUrl" />
-            </div>
-
-            @if (!string.IsNullOrWhiteSpace(errorMessage))
-            {
-                <div class="alert alert-danger">
-                    @errorMessage
-                </div>
-            }
-
-            @if (!string.IsNullOrWhiteSpace(successMessage))
-            {
-                <div class="alert alert-success">
-                    @successMessage
-                </div>
-            }
-
-            <button
-                type="submit"
-                class="secondary-button"
-                disabled="@isLoading"
-                style="font-size: 16px;"
-                >
-
-                @(isLoading ? "Creating Account..." : "Submit")
-            </button>
-        </EditForm>
-
-        <div class="auth-footer">
-            <p style="font-size: 16px;">
-                Already have an account?
-                <a href="/login" style="color: #2563eb; text-decoration: underline; font-weight: bold;">Sign in</a>
-            </p>
         </div>
-
     </div>
-</div>
 
 @code {
     private RegisterModel model = new();
 
     private bool isLoading;
+    private bool isPasswordVisible;
+    private bool isConfirmPasswordVisible;
     private string? errorMessage;
     private string? successMessage;
+
+    private void TogglePasswordVisibility() =>
+        isPasswordVisible = !isPasswordVisible;
+
+    private void ToggleConfirmPasswordVisibility() =>
+        isConfirmPasswordVisible = !isConfirmPasswordVisible;
 
     private async Task HandleRegister()
     {
