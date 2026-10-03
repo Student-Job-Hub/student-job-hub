@@ -61,6 +61,15 @@
                 </div>
 
                 <ValidationMessage For="@(() => model.Password)" />
+
+                <div class="mt-2">
+                    <small class="text-muted d-block mb-1">Password must include:</small>
+                    <ul class="mb-0 ps-3" style="font-size: 0.9rem; list-style: none; padding-left: 0;">
+                        <li class="@(HasMinLength ? "text-success" : "text-muted")">• At least 8 characters</li>
+                        <li class="@(HasUppercase ? "text-success" : "text-muted")">• At least one capital letter</li>
+                        <li class="@(HasSpecialCharacter ? "text-success" : "text-muted")">• At least one special character</li>
+                    </ul>
+                </div>
             </div>
 
             <div class="form-group">
@@ -156,6 +165,10 @@
     private bool isConfirmPasswordVisible;
     private string? errorMessage;
     private string? successMessage;
+
+    private bool HasMinLength => !string.IsNullOrEmpty(model.Password) && model.Password.Length >= 8;
+    private bool HasUppercase => !string.IsNullOrEmpty(model.Password) && model.Password.Any(char.IsUpper);
+    private bool HasSpecialCharacter => !string.IsNullOrEmpty(model.Password) && model.Password.Any(ch => !char.IsLetterOrDigit(ch));
 
     private void TogglePasswordVisibility() =>
         isPasswordVisible = !isPasswordVisible;
