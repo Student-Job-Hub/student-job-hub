@@ -37,7 +37,10 @@ Here are feature assignments and development workflow guidelines for the team.
 ### 7. SUN123-wrld (`SUN123-wrld`)
 * **Feature #33: Profile Pictures on Cards** — Update job, saved job, and service detail cards to display the user's uploaded profile picture instead of generic initials (fallback to initials if no picture exists).
 * **Feature #34: Email Verification** — Send verification email on registration before allowing full access.
+
+### 8. Kelvin Annor (`jukebox5`)
 * **Feature #35: Forgot Password / Reset** — Standard password reset flow with email link.
+* **Task brief:** Implement a secure password reset flow where a user can request a reset link via email, validate the token, and update their password. The work includes backend API endpoints for requesting reset and setting a new password, email integration or mock email trigger, UI pages for requesting and resetting the password, validation for invalid/expired tokens, and basic testing to confirm success and failure scenarios.
 ---
 
 ## Team Development & Workflow Guidelines
