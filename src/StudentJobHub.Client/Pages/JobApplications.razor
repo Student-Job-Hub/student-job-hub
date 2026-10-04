@@ -51,16 +51,31 @@
                             </button>
                         }
                         <a class="message-link" href="/messages/@application.Id">Message applicant</a>
-                        <button @onclick="() => AcceptAsync(application)" class="accept-button"
-                                disabled="@IsUpdating(application.Id)">Accept</button>
-                        <button @onclick="() => RejectAsync(application)" class="reject-button"
-                                disabled="@IsUpdating(application.Id)">Reject</button>
+                        @if (IsPending(application.Status))
+                        {
+                            <button @onclick="() => AcceptAsync(application)" class="accept-button"
+                                    disabled="@IsUpdating(application.Id)">Accept</button>
+                            <button @onclick="() => RejectAsync(application)" class="reject-button"
+                                    disabled="@IsUpdating(application.Id)">Decline</button>
+                        }
                     </div>
                 </article>
             }
         </div>
     }
 </div>
+
+@if (showStatusConfirmation)
+{
+    <div class="confirmation-backdrop" @onclick="CloseStatusConfirmation">
+        <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-title"
+                 @onclick:stopPropagation="true">
+            <h2 id="confirmation-title">Application @confirmedStatus</h2>
+            <p>@confirmedApplicant's application has been @confirmedStatus.ToLowerInvariant().</p>
+            <button type="button" class="confirmation-close" @onclick="CloseStatusConfirmation">Done</button>
+        </section>
+    </div>
+}
 
 <style>
     .accept-button {
@@ -143,6 +158,39 @@
         bottom: 8px;
  
     }
+
+    .confirmation-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: rgba(15, 23, 42, 0.55);
+    }
+
+    .confirmation-modal {
+        width: min(100%, 440px);
+        padding: 24px;
+        border-radius: 8px;
+        background: white;
+        color: #1f2937;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+    }
+
+    .confirmation-modal h2 {
+        margin: 0 0 12px;
+    }
+
+    .confirmation-close {
+        margin-top: 12px;
+        padding: 8px 16px;
+        border: 0;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        cursor: pointer;
+    }
 </style>
 
 @code {
@@ -152,6 +200,9 @@
     private bool isLoading = true;
     private string? errorMessage;
     private int? updatingApplicationId;
+    private bool showStatusConfirmation;
+    private string confirmedApplicant = string.Empty;
+    private string confirmedStatus = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -176,6 +227,9 @@
 
     private bool IsUpdating(int applicationId) => updatingApplicationId == applicationId;
 
+    private static bool IsPending(string? status) =>
+        string.Equals(status, "Pending", StringComparison.OrdinalIgnoreCase);
+
     private Task AcceptAsync(ApplicationModel application) =>
         UpdateStatusAsync(application, "Accepted");
 
@@ -195,6 +249,9 @@
             if (response.IsSuccessStatusCode)
             {
                 application.Status = status;
+                confirmedApplicant = application.ApplicantName;
+                confirmedStatus = status == "Rejected" ? "declined" : "accepted";
+                showStatusConfirmation = true;
             }
             else
             {
@@ -212,6 +269,8 @@
             updatingApplicationId = null;
         }
     }
+
+    private void CloseStatusConfirmation() => showStatusConfirmation = false;
 
     private async Task DownloadResumeAsync(ApplicationModel application)
     {
