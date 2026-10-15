@@ -18,13 +18,19 @@ if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32
         "Jwt:Key must be configured with at least 32 bytes.");
 }
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "Missing required database configuration: set ConnectionStrings__DefaultConnection in the environment or configure it in appsettings.json/appsettings.{Environment}.json.");
+}
+
 // ============================================================
 // DATABASE
 // ============================================================
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(connectionString)
     .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // ============================================================
